@@ -1,33 +1,14 @@
 // ===== إعداد Supabase =====
-// تنبيه: ضع روابط مشروعك الحقيقي هنا ليتم الاتصال بقاعدة البيانات بنجاح
-const SUPABASE_URL = 'SUPABASE_URL'; 
-const SUPABASE_KEY = 'SUPABASE_KEY';
-
-let supabase = null;
-
-// حماية الكود: منع توقف الأزرار إذا كانت الروابط فارغة أو تحتوي على نص عربي
-try {
-  if (SUPABASE_URL && !SUPABASE_URL.includes('SUPABASE_URL')) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } else {
-    console.warn("تنبيه: لم يتم ربط Supabase بمفاتيح حقيقية. تم تفعيل النمط التجريبي لضمان عمل الأزرار.");
-  }
-} catch (e) {
-  console.error("خطأ في تهيئة Supabase ولكن الأزرار ستعمل:", e);
-}
+const SUPABASE_URL = 'ضع_رابط_مشروعك_هنا'; 
+const SUPABASE_KEY = 'ضع_مفتاح_anon_key_هنا';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_PASS = 'flylight2024';
 let localContributions = []; 
 let selectedContribution = null;
 
-// ===== جلب البيانات من Supabase أو الذاكرة المؤقتة =====
+// ===== جلب البيانات من Supabase =====
 async function fetchContributions() {
-  if (!supabase) {
-    // نمط تجريبي محلي لقراءة البيانات المخزنة مؤقتاً لكي لا تتوقف لوحة التحكم
-    localContributions = JSON.parse(localStorage.getItem('flylight_backup')) || [];
-    return localContributions;
-  }
-  
   try {
     const { data, error } = await supabase
       .from('contributions')
@@ -67,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.body.addEventListener('click', function (e) {
     const targetButton = e.target.closest('[data-page]');
     if (targetButton) {
-      e.preventDefault(); // مـنـع ظـهـور الـهـاشـتـاغ #
+      e.preventDefault();
       const pageName = targetButton.getAttribute('data-page');
       switchPage(pageName);
     }
@@ -157,7 +138,7 @@ function setupFileUpload() {
   });
 }
 
-// ===== إرسال المساهمة =====
+// ===== إرسال المساهمة إلى Supabase =====
 function setupForm() {
   const form = document.getElementById('contributeForm');
   if (!form) return;
@@ -190,28 +171,8 @@ function setupForm() {
         receipt: ev.target.result, 
         receipt_name: file.name,
         notes: document.getElementById('notes').value.trim(),
-        status: 'قيد المراجعة',
-        created_at: new Date().toISOString()
+        status: 'قيد المراجعة'
       };
-
-      if (!supabase) {
-        // حفظ تجريبي محلي لتجربة عمل الموقع بالكامل قبل ربط قاعدة البيانات
-        let backup = JSON.parse(localStorage.getItem('flylight_backup')) || [];
-        backup.push(contributionData);
-        localStorage.setItem('flylight_backup', JSON.stringify(backup));
-        
-        showToast('تم الإرسال بنجاح (وضع تجريبي محلي)', 'success');
-        const successEl = document.getElementById('successMsg');
-        if (successEl) {
-          successEl.classList.add('active');
-          setTimeout(() => successEl.classList.remove('active'), 4000);
-        }
-        form.reset();
-        document.getElementById('filePreview').style.display = 'none';
-        submitBtn.textContent = 'تقديم المساهمة';
-        submitBtn.disabled = false;
-        return;
-      }
 
       const { error } = await supabase.from('contributions').insert([contributionData]);
 
@@ -219,12 +180,10 @@ function setupForm() {
         showToast('حدث خطأ أثناء الإرسال', 'error');
       } else {
         const successEl = document.getElementById('successMsg');
-        if (successEl) {
-          successEl.classList.add('active');
-          setTimeout(() => successEl.classList.remove('active'), 4000);
-        }
+        successEl.classList.add('active');
         form.reset();
         document.getElementById('filePreview').style.display = 'none';
+        setTimeout(() => successEl.classList.remove('active'), 4000);
       }
       
       submitBtn.textContent = 'تقديم المساهمة';
@@ -234,7 +193,7 @@ function setupForm() {
   });
 }
 
-// ===== تحديث لوحة التحكم =====
+// ===== تحديث لوحة التحكم وعرض الحساب الصحيح للمبالغ المعتمدة فقط =====
 function updateDashboard() {
   const contributions = localContributions;
   const approvedContributions = contributions.filter(c => c.status === 'تمت الموافقة');
@@ -243,14 +202,12 @@ function updateDashboard() {
   const pending = contributions.filter(c => c.status === 'قيد المراجعة').length;
   const approvedCount = approvedContributions.length;
 
-  if(document.getElementById('totalCount')) document.getElementById('totalCount').textContent = contributions.length;
-  if(document.getElementById('totalSum')) document.getElementById('totalSum').textContent = totalSum.toLocaleString('ar-SA');
-  if(document.getElementById('pendingCount')) document.getElementById('pendingCount').textContent = pending;
-  if(document.getElementById('approvedCount')) document.getElementById('approvedCount').textContent = approvedCount;
+  document.getElementById('totalCount').textContent = contributions.length;
+  document.getElementById('totalSum').textContent = totalSum.toLocaleString('ar-SA');
+  document.getElementById('pendingCount').textContent = pending;
+  document.getElementById('approvedCount').textContent = approvedCount;
 
   const tbody = document.getElementById('tableBody');
-  if (!tbody) return;
-
   if (contributions.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem;">لا توجد مساهمات بعد</td></tr>';
     return;
@@ -261,12 +218,12 @@ function updateDashboard() {
       <td style="padding:1rem;">${c.name}</td>
       <td style="padding:1rem;" dir="ltr">${c.phone}</td>
       <td style="padding:1rem;">${c.email}</td>
-      <td style="padding:1rem;"><strong>${Number(c.amount).toLocaleString('ar-SA')} ر.س</strong></td>
+      <td style="padding:1rem;"><strong>${c.amount.toLocaleString('ar-SA')} ر.س</strong></td>
       <td style="padding:1rem;">${new Date(c.created_at).toLocaleDateString('ar-SA')}</td>
       <td style="padding:1rem;"><span class="badge badge-${c.status === 'تمت الموافقة' ? 'approved' : c.status === 'مرفوض' ? 'rejected' : 'pending'}">${c.status}</span></td>
       <td style="padding:1rem;">
         <div style="display:flex; gap:0.5rem;">
-          <button class="action-btn" onclick="viewDetails(${c.id || 0})" style="padding:0.25rem 0.75rem; cursor:pointer;">عرض</button>
+          <button class="action-btn" onclick="viewDetails(${c.id})" style="padding:0.25rem 0.75rem; cursor:pointer;">عرض</button>
           ${c.status === 'قيد المراجعة' ? `
             <button class="action-btn" onclick="updateStatus(${c.id}, 'تمت الموافقة')" style="background:var(--success); color:#fff; border:none; padding:0.25rem 0.5rem; cursor:pointer; border-radius:4px;">✓ موافقة</button>
             <button class="action-btn" onclick="updateStatus(${c.id}, 'مرفوض')" style="background:#EF4444; color:#fff; border:none; padding:0.25rem 0.5rem; cursor:pointer; border-radius:4px;">✗ رفض</button>
@@ -278,16 +235,8 @@ function updateDashboard() {
   `).join('');
 }
 
-// ===== تحديث حالة المساهمة =====
+// ===== تحديث حالة المساهمة المرفوضة والمقبولة عاجلاً لخصم الحساب أو اعتمادها =====
 async function updateStatus(id, newStatus) {
-  if (!supabase) {
-    localContributions = localContributions.map(c => (c.id === id || (!c.id && c.name)) ? {...c, status: newStatus} : c);
-    localStorage.setItem('flylight_backup', JSON.stringify(localContributions));
-    showToast(`تم التحديث تجريبياً إلى: ${newStatus}`, 'success');
-    updateDashboard();
-    return;
-  }
-
   const { error } = await supabase
     .from('contributions')
     .update({ status: newStatus })
@@ -298,7 +247,7 @@ async function updateStatus(id, newStatus) {
     return;
   }
 
-  showToast(newStatus === 'تمت الموافقة' ? '✓ تم قبول المساهمة واعتمد المبلغ' : '✗ تم رفض المساهمة واستبعاد المبلغ', newStatus === 'تمت الموافقة' ? 'success' : 'error');
+  showToast(newStatus === 'تمت الموافقة' ? '✓ تم قبول المساهمة واعتماد المبلغ' : '✗ تم رفض المساهمة واستبعاد المبلغ', newStatus === 'تمت الموافقة' ? 'success' : 'error');
   await fetchContributions();
   updateDashboard();
   
@@ -308,13 +257,14 @@ async function updateStatus(id, newStatus) {
 }
 
 function viewDetails(id) {
-  const c = localContributions.find(x => x.id === id || (!id && x.name));
-  if (!c) return;
+  selectedContribution = localContributions.find(c => c.id === id);
+  if (!selectedContribution) return;
+  const c = selectedContribution;
 
   document.getElementById('modalBody').innerHTML = `
     <div style="display:flex; flex-direction:column; gap:0.75rem;">
       <p><strong>الاسم:</strong> ${c.name}</p>
-      <p><strong>المبلغ:</strong> ${Number(c.amount).toLocaleString('ar-SA')} ريال سعودي</p>
+      <p><strong>المبلغ:</strong> ${c.amount.toLocaleString('ar-SA')} ريال سعودي</p>
       <p><strong>الهاتف:</strong> ${c.phone}</p>
       <p><strong>الحالة:</strong> ${c.status}</p>
       ${c.notes ? `<p><strong>ملاحظات:</strong> ${c.notes}</p>` : ''}
@@ -330,11 +280,11 @@ function closeModal() {
 
 // ===== طباعة كتيب الأسهم ومطابقة المدخلات =====
 function downloadReceiptPDF(id) {
-  const c = localContributions.find(x => x.id === id || (!id && x.name));
-  if (!c) return;
+  const c = localContributions.find(x => x.id === id);
+  if (!c || c.status !== 'تمت الموافقة') return;
 
   const sharesCount = c.amount / 50; 
-  const dateFormatted = new Date(c.created_at || new Date()).toLocaleDateString('ar-SA');
+  const dateFormatted = new Date(c.created_at).toLocaleDateString('ar-SA');
 
   const el = document.createElement('div');
   el.style.cssText = 'padding:50px; font-family: "Segoe UI", Arial, sans-serif; direction:rtl; background:#fff; color:#0A1C33; border: 12px solid #1E9196; border-radius: 8px; position:relative;';
@@ -343,6 +293,7 @@ function downloadReceiptPDF(id) {
     <div style="display:flex; justify-content:space-between; border-bottom:2px solid #1E9196; padding-bottom:15px; margin-bottom:30px;">
         <div style="text-align:right;">
             <p style="margin:4px 0; color:#1E9196; font-weight:bold;">برنامج الشركة</p>
+            <p style="margin:4px 0;">رقم الشهادة: <strong>${c.id}</strong></p>
             <p style="margin:4px 0;">التاريخ: <strong>${dateFormatted}</strong></p>
         </div>
         <div style="text-align:left;">
