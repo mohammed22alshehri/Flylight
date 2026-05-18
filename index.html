@@ -11,7 +11,6 @@
 <body>
   <div class="wrapper">
 
-    <!-- ===== HEADER ===== -->
     <header>
       <nav>
         <div class="logo">
@@ -30,7 +29,6 @@
 
     <main>
 
-      <!-- ===== HOME ===== -->
       <div id="home" class="page active">
 
         <section class="hero-section">
@@ -43,18 +41,16 @@
             <h1 class="hero-title">Fly Light Logistics Solutions</h1>
             <p class="hero-subtitle">حلول لوجستية متكاملة وموثوقة لنقل البضائع والشحنات بكفاءة واحترافية عالية</p>
             <div class="hero-buttons">
-            <button class="btn btn-primary" data-page="contribute">ابدأ المساهمة</button>
+              <button class="btn btn-primary">ابدأ المساهمة</button>
               <button class="btn btn-glass">تعرف علينا</button>
             </div>
           </div>
         </section>
 
-        <!-- About -->
         <section class="about-section">
           <div class="container">
             <h2 class="section-title">عن الشركة</h2>
             <div class="about-card">
-             
               <p class="about-text">
                 هي شركة ناشئة واعدة في مجال الخدمات اللوجستية المتكاملة، تم بناؤها وتطويرها بالكامل بأيدي مجموعة من الطلاب الشغوفين والمتميزين. نحن في بداية طريقنا، ونؤمن بأن دعمكم ومساهمتكم معنا هي الركيزة الأساسية لنخطو أولى خطواتنا بثقة نحو رحلة نجاحنا وتميزنا في تقديم حلول النقل والشحن والتوزيع. شاركونا النجاح، ودعونا نكبر معاً.
               </p>
@@ -62,7 +58,6 @@
           </div>
         </section>
 
-        <!-- Services -->
         <section class="services-section">
           <div class="container">
             <h2 class="section-title">خدماتنا الرئيسية</h2>
@@ -77,7 +72,6 @@
           </div>
         </section>
 
-        <!-- Values -->
         <section class="values-section">
           <div class="container">
             <h2 class="section-title">رؤيتنا وقيمنا</h2>
@@ -90,7 +84,6 @@
         </section>
       </div>
 
-      <!-- ===== CONTRIBUTE ===== -->
       <div id="contribute" class="page">
         <section class="hero-section hero-small">
           <div class="hero-content">
@@ -103,7 +96,7 @@
           <div class="container-small">
             <div class="form-card">
 
-              <div class="success-message" id="successMsg">
+              <div class="success-message" id="successMsg" style="display: none;">
                 <span class="success-icon">✓</span>
                 <div>
                   <strong>تم تقديم مساهمتك بنجاح!</strong>
@@ -111,7 +104,6 @@
                 </div>
               </div>
 
-              <!-- IBAN -->
               <div class="iban-card">
                 <div class="iban-top">
                   <div>
@@ -148,7 +140,7 @@
 
                 <div class="form-group">
                   <label>إيصال التحويل البنكي</label>
-                  <div class="upload-area" id="uploadArea">
+                  <div class="upload-area" id="uploadArea" style="cursor: pointer;">
                     <div class="upload-icon">📤</div>
                     <p class="upload-title">اسحب الملف هنا أو انقر للاختيار</p>
                     <p class="upload-subtitle">PNG, JPG أو PDF — الحد الأقصى 5MB</p>
@@ -171,10 +163,8 @@
         </section>
       </div>
 
-      <!-- ===== DASHBOARD ===== -->
       <div id="dashboard" class="page">
 
-        <!-- Login Screen -->
         <div id="adminLogin" class="admin-login-screen">
           <div class="login-card">
             <div class="login-icon">🔐</div>
@@ -183,12 +173,11 @@
             <div class="form-group">
               <input type="password" id="adminPassword" placeholder="••••••••" class="login-input">
             </div>
-            <div id="loginError" class="login-error">⚠ كلمة المرور غير صحيحة</div>
+            <div id="loginError" class="login-error" style="display: none;">⚠ كلمة المرور غير صحيحة</div>
             <button class="btn btn-primary btn-block" onclick="adminLogin()">دخول</button>
           </div>
         </div>
 
-        <!-- Dashboard Content -->
         <div id="adminContent" style="display:none">
           <section class="hero-section hero-small">
             <div class="hero-content">
@@ -275,9 +264,8 @@
     </footer>
   </div>
 
-  <!-- ===== Details Modal ===== -->
   <div id="detailsModal" class="modal">
-    <div class="modal-overlay"></div>
+    <div class="modal-overlay" onclick="closeModal()"></div>
     <div class="modal-content">
       <div class="modal-header">
         <h2>تفاصيل المساهمة</h2>
@@ -290,7 +278,6 @@
     </div>
   </div>
 
-  <!-- ===== Booklet Modal ===== -->
   <div id="bookletModal" class="modal">
     <div class="modal-overlay" onclick="closeBooklet()"></div>
     <div class="modal-content modal-booklet">
@@ -306,8 +293,7 @@
     </div>
   </div>
 
-  <!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="supabase.js"></script>
   <script src="script.js"></script>
