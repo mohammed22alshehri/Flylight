@@ -1,29 +1,32 @@
 // ===== إعداد Supabase =====
-const SUPABASE_URL = 'SUPABASE_URL';
-const SUPABASE_KEY = 'SUPABASE_KEYا';
+const SUPABASE_URL = 'ضع_رابط_مشروعك_هنا'; 
+const SUPABASE_KEY = 'ضع_مفتاح_anon_key_هنا';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_PASS = 'flylight2024';
-let localContributions = []; // تخزين محلي مؤقت للبيانات المسحوبة
+let localContributions = []; 
 let selectedContribution = null;
 
 // ===== جلب البيانات من Supabase =====
 async function fetchContributions() {
-  const { data, error } = await supabase
-    .from('contributions')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('contributions')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching data:', error);
+    if (error) throw error;
+    localContributions = data || [];
+    return localContributions;
+  } catch (err) {
+    console.error('Error fetching data:', err);
     return [];
   }
-  localContributions = data;
-  return data;
 }
 
-// ===== Hamburger Menu =====
+// ===== تهيئة الأحداث والعمليات عند تحميل الصفحة =====
 document.addEventListener('DOMContentLoaded', function () {
+  // 1. نظام القائمة المتجاوبة (Hamburger)
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('navLinks');
 
@@ -32,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
       hamburger.classList.toggle('open');
       navLinks.classList.toggle('open');
     });
+
     navLinks.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
         hamburger.classList.remove('open');
@@ -39,6 +43,20 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+
+  // 2. تفعيل التنقل بين الصفحات لجميع الأزرار والروابط التي تحمل خاصية data-page
+  document.body.addEventListener('click', function (e) {
+    const targetButton = e.target.closest('[data-page]');
+    if (targetButton) {
+      e.preventDefault();
+      const pageName = targetButton.getAttribute('data-page');
+      switchPage(pageName);
+    }
+  });
+
+  setupFileUpload();
+  setupForm();
+  switchPage('home'); // تعيين الصفحة الرئيسية كصفحة افتراضية عند الفتح
 });
 
 // ===== التنقل بين الصفحات =====
@@ -49,7 +67,7 @@ function switchPage(pageName) {
   const target = document.getElementById(pageName);
   if (target) target.classList.add('active');
 
-  const activeLink = document.querySelector(`[data-page="${pageName}"]`);
+  const activeLink = document.querySelector(`.nav-links [data-page="${pageName}"]`);
   if (activeLink) activeLink.classList.add('active');
 
   if (pageName === 'dashboard') {
@@ -90,40 +108,16 @@ function adminLogout() {
   checkAdminSession();
 }
 
-// ===== إعداد الأحداث الأساسية =====
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function (e) {
-      e.preventDefault();
-      switchPage(this.getAttribute('data-page'));
-    });
-  });
-
-  document.querySelectorAll('[data-page]').forEach(btn => {
-    if (!btn.classList.contains('nav-link')) {
-      btn.addEventListener('click', function () {
-        switchPage(this.getAttribute('data-page'));
-      });
-    }
-  });
-
-  setupFileUpload();
-  setupForm();
-  switchPage('home');
-});
-
 // ===== نسخ IBAN =====
 function copyIBAN() {
   const iban = 'SA0880000868608016214271';
   navigator.clipboard.writeText(iban).then(() => {
     const btn = document.querySelector('.btn-copy');
-    const orig = btn.textContent;
-    btn.textContent = '✓ تم النسخ';
-    btn.style.background = 'rgba(255,255,255,0.4)';
-    setTimeout(() => {
-      btn.textContent = orig;
-      btn.style.background = 'rgba(255,255,255,0.2)';
-    }, 2000);
+    if(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '✓ تم النسخ';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }
   });
 }
 
@@ -137,31 +131,24 @@ function setupFileUpload() {
   uploadArea.addEventListener('click', () => fileInput.click());
 
   fileInput.addEventListener('change', e => {
-    if (e.target.files.length > 0) showFileName(e.target.files[0]);
+    if (e.target.files.length > 0) {
+      filePreview.innerHTML = `<span>✓ تم اختيار: ${e.target.files[0].name}</span>`;
+      filePreview.style.display = 'block';
+    }
   });
-
-  function showFileName(file) {
-    filePreview.innerHTML = `<span style="font-size:20px">✓</span><span>${file.name}</span>`;
-    filePreview.classList.add('active');
-  }
-}
-
-function validateAmount(value) {
-  const num = parseFloat(value);
-  return num > 0 && num % 50 === 0;
 }
 
 // ===== إرسال المساهمة إلى Supabase =====
 function setupForm() {
   const form = document.getElementById('contributeForm');
-  const amountInput = document.getElementById('amount');
   if (!form) return;
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
+    const amountInput = document.getElementById('amount');
     const amount = parseFloat(amountInput.value);
-    if (!validateAmount(amount)) {
+    if (!amount || amount <= 0 || amount % 50 !== 0) {
       showToast('المبلغ يجب أن يكون من مضاعفات 50', 'error');
       return;
     }
@@ -181,21 +168,22 @@ function setupForm() {
         phone: document.getElementById('phone').value.trim(),
         email: document.getElementById('email').value.trim(),
         amount: amount,
-        receipt: ev.target.result, // لحفظ الإيصال كـ Base64 (يفضل مستقبلاً استخدام Supabase Storage)
+        receipt: ev.target.result, 
         receipt_name: file.name,
         notes: document.getElementById('notes').value.trim(),
         status: 'قيد المراجعة'
       };
 
-      const { data, error } = await supabase.from('contributions').insert([contributionData]);
+      const { error } = await supabase.from('contributions').insert([contributionData]);
 
       if (error) {
         showToast('حدث خطأ أثناء الإرسال', 'error');
       } else {
-        document.getElementById('successMsg').classList.add('active');
+        const successEl = document.getElementById('successMsg');
+        successEl.classList.add('active');
         form.reset();
-        document.getElementById('filePreview').classList.remove('active');
-        setTimeout(() => document.getElementById('successMsg').classList.remove('active'), 4000);
+        document.getElementById('filePreview').style.display = 'none';
+        setTimeout(() => successEl.classList.remove('active'), 4000);
       }
       
       submitBtn.textContent = 'تقديم المساهمة';
@@ -205,14 +193,12 @@ function setupForm() {
   });
 }
 
-// ===== تحديث لوحة التحكم (مع الحساب الصحيح للمبالغ المقبولة فقط) =====
+// ===== تحديث لوحة التحكم وعرض الحساب الصحيح للمبالغ المعتمدة فقط =====
 function updateDashboard() {
   const contributions = localContributions;
-  
-  // حساب المبالغ للمساهمات المقبولة فقط لعدم حساب المرفوض
   const approvedContributions = contributions.filter(c => c.status === 'تمت الموافقة');
-  const totalSum = approvedContributions.reduce((s, c) => s + Number(c.amount), 0);
   
+  const totalSum = approvedContributions.reduce((s, c) => s + Number(c.amount), 0);
   const pending = contributions.filter(c => c.status === 'قيد المراجعة').length;
   const approvedCount = approvedContributions.length;
 
@@ -223,42 +209,33 @@ function updateDashboard() {
 
   const tbody = document.getElementById('tableBody');
   if (contributions.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">لا توجد مساهمات بعد</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem;">لا توجد مساهمات بعد</td></tr>';
     return;
   }
 
   tbody.innerHTML = contributions.map(c => `
-    <tr>
-      <td>${c.name}</td>
-      <td dir="ltr">${c.phone}</td>
-      <td>${c.email}</td>
-      <td><strong>${c.amount.toLocaleString('ar-SA')} ر.س</strong></td>
-      <td>${new Date(c.created_at).toLocaleDateString('ar-SA')}</td>
-      <td>${statusBadge(c.status)}</td>
-      <td>
-        <div class="action-buttons">
-          <button class="action-btn" onclick="viewDetails(${c.id})">عرض</button>
+    <tr style="border-bottom: 1px solid var(--border);">
+      <td style="padding:1rem;">${c.name}</td>
+      <td style="padding:1rem;" dir="ltr">${c.phone}</td>
+      <td style="padding:1rem;">${c.email}</td>
+      <td style="padding:1rem;"><strong>${c.amount.toLocaleString('ar-SA')} ر.س</strong></td>
+      <td style="padding:1rem;">${new Date(c.created_at).toLocaleDateString('ar-SA')}</td>
+      <td style="padding:1rem;"><span class="badge badge-${c.status === 'تمت الموافقة' ? 'approved' : c.status === 'مرفوض' ? 'rejected' : 'pending'}">${c.status}</span></td>
+      <td style="padding:1rem;">
+        <div style="display:flex; gap:0.5rem;">
+          <button class="action-btn" onclick="viewDetails(${c.id})" style="padding:0.25rem 0.75rem; cursor:pointer;">عرض</button>
           ${c.status === 'قيد المراجعة' ? `
-            <button class="action-btn btn-approve" onclick="updateStatus(${c.id}, 'تمت الموافقة')">✓ موافقة</button>
-            <button class="action-btn btn-reject" onclick="updateStatus(${c.id}, 'مرفوض')">✗ رفض</button>
+            <button class="action-btn" onclick="updateStatus(${c.id}, 'تمت الموافقة')" style="background:var(--success); color:#fff; border:none; padding:0.25rem 0.5rem; cursor:pointer; border-radius:4px;">✓ موافقة</button>
+            <button class="action-btn" onclick="updateStatus(${c.id}, 'مرفوض')" style="background:#EF4444; color:#fff; border:none; padding:0.25rem 0.5rem; cursor:pointer; border-radius:4px;">✗ رفض</button>
           ` : ''}
-          ${c.status === 'تمت الموافقة' ? `<button class="action-btn" onclick="downloadReceiptPDF(${c.id})">شهادة</button>` : ''}
+          ${c.status === 'تمت الموافقة' ? `<button class="action-btn" onclick="downloadReceiptPDF(${c.id})" style="background:var(--primary); color:#fff; border:none; padding:0.25rem 0.5rem; cursor:pointer; border-radius:4px;">الشهادة PDF</button>` : ''}
         </div>
       </td>
     </tr>
   `).join('');
 }
 
-function statusBadge(status) {
-  const map = {
-    'قيد المراجعة': 'badge-pending',
-    'تمت الموافقة': 'badge-approved',
-    'مرفوض': 'badge-rejected'
-  };
-  return `<span class="badge ${map[status] || 'badge-pending'}">${status}</span>`;
-}
-
-// ===== تحديث حالة المساهمة =====
+// ===== تحديث حالة المساهمة المرفوضة والمقبولة عاجلاً لخصم الحساب أو اعتمادها =====
 async function updateStatus(id, newStatus) {
   const { error } = await supabase
     .from('contributions')
@@ -270,13 +247,12 @@ async function updateStatus(id, newStatus) {
     return;
   }
 
-  showToast(newStatus === 'تمت الموافقة' ? '✓ تمت الموافقة على المساهمة' : '✗ تم رفض المساهمة', newStatus === 'تمت الموافقة' ? 'success' : 'error');
+  showToast(newStatus === 'تمت الموافقة' ? '✓ تم قبول المساهمة واعتماد المبلغ' : '✗ تم رفض المساهمة واستبعاد المبلغ', newStatus === 'تمت الموافقة' ? 'success' : 'error');
   await fetchContributions();
   updateDashboard();
   
-  // إذا تمت الموافقة، اعرض الشهادة تلقائياً للمدير أو أتح تحميلها
   if (newStatus === 'تمت الموافقة') {
-      downloadReceiptPDF(id);
+    downloadReceiptPDF(id);
   }
 }
 
@@ -286,20 +262,14 @@ function viewDetails(id) {
   const c = selectedContribution;
 
   document.getElementById('modalBody').innerHTML = `
-    <table class="info-table">
-      <tr><td>الاسم</td><td>${c.name}</td></tr>
-      <tr><td>المبلغ</td><td><strong>${c.amount.toLocaleString('ar-SA')} ريال سعودي</strong></td></tr>
-      <tr><td>الحالة</td><td>${statusBadge(c.status)}</td></tr>
-    </table>
-    <div style="margin-top:1.5rem">
-      <p style="font-weight:700;margin-bottom:0.75rem;color:#0A1C33">الإيصال:</p>
-      ${c.receipt ? `<img src="${c.receipt}" class="receipt-image" alt="إيصال">` : 'لا يوجد إيصال'}
+    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+      <p><strong>الاسم:</strong> ${c.name}</p>
+      <p><strong>المبلغ:</strong> ${c.amount.toLocaleString('ar-SA')} ريال سعودي</p>
+      <p><strong>الهاتف:</strong> ${c.phone}</p>
+      <p><strong>الحالة:</strong> ${c.status}</p>
+      ${c.notes ? `<p><strong>ملاحظات:</strong> ${c.notes}</p>` : ''}
+      ${c.receipt ? `<div style="margin-top:1rem;"><p><strong>صورة الإيصال:</strong></p><img src="${c.receipt}" style="width:100%; max-height:250px; object-fit:contain; border-radius:6px; border:1px solid var(--border);"></div>` : ''}
     </div>
-    ${c.status === 'قيد المراجعة' ? `
-    <div style="display:flex;gap:1rem;margin-top:1.5rem">
-      <button class="btn btn-approve-full" onclick="updateStatus(${c.id},'تمت الموافقة');closeModal()">✓ موافقة على المساهمة</button>
-      <button class="btn btn-reject-full" onclick="updateStatus(${c.id},'مرفوض');closeModal()">✗ رفض المساهمة</button>
-    </div>` : ''}
   `;
   document.getElementById('detailsModal').classList.add('active');
 }
@@ -308,66 +278,64 @@ function closeModal() {
   document.getElementById('detailsModal').classList.remove('active');
 }
 
-// ===== توليد كتيب الأسهم (الشهادة) بصيغة PDF ومطابقة للمرفق =====
+// ===== طباعة كتيب الأسهم ومطابقة المدخلات =====
 function downloadReceiptPDF(id) {
   const c = localContributions.find(x => x.id === id);
   if (!c || c.status !== 'تمت الموافقة') return;
 
-  const sharesCount = c.amount / 50; // حساب عدد الأسهم
+  const sharesCount = c.amount / 50; 
   const dateFormatted = new Date(c.created_at).toLocaleDateString('ar-SA');
 
   const el = document.createElement('div');
-  el.style.cssText = 'padding:60px; font-family: "Segoe UI", Arial, sans-serif; direction:rtl; background:#fff; color:#0A1C33; position:relative; min-height: 800px; border: 15px solid #1E9196; border-radius: 10px; background-image: radial-gradient(circle, rgba(30,145,150,0.05) 0%, transparent 100%);';
+  el.style.cssText = 'padding:50px; font-family: "Segoe UI", Arial, sans-serif; direction:rtl; background:#fff; color:#0A1C33; border: 12px solid #1E9196; border-radius: 8px; position:relative;';
   
   el.innerHTML = `
-    <div style="display:flex; justify-content:space-between; border-bottom:3px solid #1E9196; padding-bottom:20px; margin-bottom:40px;">
+    <div style="display:flex; justify-content:space-between; border-bottom:2px solid #1E9196; padding-bottom:15px; margin-bottom:30px;">
         <div style="text-align:right;">
-            <p style="margin:5px 0; font-size:18px; font-weight:bold; color:#1E9196;">برنامج الشركة [cite: 5]</p>
-            <p style="margin:5px 0;">رقم الشهادة: <strong>${c.id}</strong> [cite: 19]</p>
-            <p style="margin:5px 0;">التاريخ: <strong>${dateFormatted}</strong> [cite: 14]</p>
+            <p style="margin:4px 0; color:#1E9196; font-weight:bold;">برنامج الشركة</p>
+            <p style="margin:4px 0;">رقم الشهادة: <strong>${c.id}</strong></p>
+            <p style="margin:4px 0;">التاريخ: <strong>${dateFormatted}</strong></p>
         </div>
         <div style="text-align:left;">
-            <h1 style="color:#0A1C33; font-size:32px; margin:0;">Fly Light Logistics Solutions</h1>
-            <p style="margin:5px 0; font-size:14px; color:#6B7280;">إنجاز السعودية [cite: 3]</p>
+            <h2 style="margin:0; color:#0A1C33;">Fly Light Logistics Solutions</h2>
+            <p style="margin:4px 0; font-size:12px; color:#6B7280;">إنجاز السعودية</p>
         </div>
     </div>
 
-    <div style="text-align:center; margin-bottom:50px;">
-      <h2 style="font-size:36px; color:#1E9196; text-decoration: underline; margin-bottom:20px;">شهادة الأسهم </h2>
-      <p style="font-size:22px; line-height:2;">
-        تشهد شركة <strong>Fly Light Logistics Solutions</strong> [cite: 21]<br>
-        بأن المساهم: <strong style="color:#1E9196; font-size:26px;">${c.name}</strong> [cite: 20]<br>
-        يملك عدد (<strong style="color:#1E9196; font-size:24px;">${sharesCount}</strong>) سهم من أسهم رأس المال،<br>
-        بقيمة إجمالية تبلغ ( <strong>${c.amount}</strong> ) ريالاً سعودياً لا غير. [cite: 21]
+    <div style="text-align:center; margin:40px 0;">
+      <h2 style="font-size:28px; color:#1E9196; margin-bottom:20px;">شهادة الأسهم</h2>
+      <p style="font-size:18px; line-height:2;">
+        تشهد شركة <strong>Fly Light Logistics Solutions</strong><br>
+        بأن المساهم: <strong style="color:#1E9196; font-size:22px;">${c.name}</strong><br>
+        يملك عدد (<strong style="color:#1E9196; font-size:20px;">${sharesCount}</strong>) سهم من أسهم رأس المال،<br>
+        بقيمة إجمالية تبلغ ( <strong>${c.amount}</strong> ) ريالاً سعودياً لا غير.
       </p>
     </div>
 
-    <div style="margin-bottom: 40px; padding: 20px; background: rgba(30,145,150,0.05); border-radius: 8px;">
-        <h3 style="color:#1E9196; margin-top:0;">معلومات المساهم </h3>
-        <p style="margin:10px 0; font-size:18px;">الاسم: <strong>${c.name}</strong> [cite: 10]</p>
-        <p style="margin:10px 0; font-size:18px;">رقم الهاتف: <strong dir="ltr">${c.phone}</strong> [cite: 11]</p>
+    <div style="background: rgba(30,145,150,0.04); padding: 15px; border-radius: 6px; margin-bottom:30px;">
+        <h4 style="color:#1E9196; margin:0 0 10px 0;">معلومات المساهم</h4>
+        <p style="margin:5px 0;">الاسم الفعلي للمشارك: <strong>${c.name}</strong></p>
+        <p style="margin:5px 0;">رقم التواصل الجوال: <strong dir="ltr">${c.phone}</strong></p>
     </div>
 
-    <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div style="margin-top: 50px; display:flex; justify-content:space-between;">
         <div>
-            <p style="font-size:16px; color:#1E9196; font-weight:bold;">توقيع مدير المالية [cite: 24]</p>
-            <div style="border-bottom: 2px dashed #0A1C33; width: 200px; margin-top: 40px;"></div>
+            <p style="font-size:14px; color:#1E9196; font-weight:bold;">توقيع مدير المالية</p>
+            <div style="border-bottom: 1px dashed #0A1C33; width: 150px; margin-top:30px;"></div>
         </div>
     </div>
 
-    <div style="position:absolute; bottom: 30px; left: 40px; right: 40px; text-align:center; padding-top:20px; border-top: 1px solid #E5E7EB;">
-      <p style="font-size:12px; color:#6B7280; line-height: 1.6;">
-        يعين المساهم مدير المالية كوكيل له في كافة اجتماعات مجلس الإدارة. [cite: 22]<br>
-        <strong>تنويه وإخلاء مسؤولية:</strong> هذه الشهادة تثبت المساهمة في شركة Fly Light Logistics Solutions. وقد طبعت لأغراض تعليمية وتطويرية ضمن برنامج إنجاز ولا تمثل أي التزام أو ذمم مالية رسمية خارج إطار الاتفاق الداخلي للبرنامج. [cite: 23]
-      </p>
+    <div style="margin-top:50px; padding-top:15px; border-top: 1px solid #E5E7EB; text-align:center; font-size:11px; color:#6B7280; line-height:1.5;">
+        يعين المساهم مدير المالية كوكيل له في كافة اجتماعات مجلس الإدارة.<br>
+        <strong>تنويه وإخلاء مسؤولية:</strong> طبعت هذه الشهادة لأغراض تعليمية وتطويرية داخل إطار برنامج مؤسسة إنجاز السعودية لتدريب الطلاب واكتساب المهارة فقط ولا تمثل أي التزام مالي خارج البرنامج.
     </div>
   `;
 
   html2pdf().set({
-    margin: 0,
-    filename: `شهادة_أسهم_${c.name}.pdf`,
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: { scale: 3, useCORS: true },
+    margin: 10,
+    filename: `كتيب_أسهم_${c.name}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   }).from(el).save();
 }
