@@ -1,9 +1,11 @@
 // ===== الثوابت =====
 const ADMIN_PASS = 'ADMIN_PASS';
 let selectedContribution = null;
+let allContributions = [];
 
-// ===== Hamburger القائمة المتنقلة =====
+// ===== عند تحميل الصفحة بالكامل =====
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. تهيئة القائمة المتنقلة للموبايل (مهم جداً لتوافق الجوال)
   const hamburger = document.getElementById('hamburger');
   const navLinks  = document.getElementById('navLinks');
   if (hamburger && navLinks) {
@@ -11,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hamburger.classList.toggle('open');
       navLinks.classList.toggle('open');
     });
+    
     navLinks.querySelectorAll('.nav-link').forEach(l =>
       l.addEventListener('click', () => {
         hamburger.classList.remove('open');
@@ -18,45 +21,54 @@ document.addEventListener('DOMContentLoaded', () => {
       })
     );
   }
-  
-  // تهيئة الفلاتر والعمليات عند تحميل الصفحة أول مرة
-  setupFilters();
-  setupForm();
+
+  // 2. ربط أزرار القائمة العلوية بالتنقل بين الصفحات
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = link.getAttribute('data-page');
+      switchPage(page);
+    });
+  });
+
+  // 3. تشغيل النماذج والفلاتر بشكل آمن
+  try { setupFilters(); } catch(e) { console.error(e); }
+  try { setupForm(); }    catch(e) { console.error(e); }
 });
 
 // ===== التنقل بين الصفحات =====
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  
   const page = document.getElementById(name);
   if (page) page.classList.add('active');
-  const link = document.querySelector(`[data-page=\"${name}\"]`);
+  
+  const link = document.querySelector(`[data-page="${name}"]`);
   if (link) link.classList.add('active');
+  
   if (name === 'dashboard') checkAdminSession();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// التبديل عند الضغط على أزرار التنقل الأساسية
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const page = link.getAttribute('data-page');
-    switchPage(page);
-  });
-});
-
-// ===== Admin Login لوحة الإدارة =====
+// ===== الإدارة والتحقق من كلمة المرور =====
 function checkAdminSession() {
   const ok = sessionStorage.getItem('adminLoggedIn');
-  document.getElementById('adminLogin').style.display  = ok ? 'none' : 'flex';
-  document.getElementById('adminContent').style.display = ok ? 'block' : 'none';
+  const loginForm = document.getElementById('adminLogin');
+  const dashboardContent = document.getElementById('adminContent');
+  
+  if(loginForm) loginForm.style.display = ok ? 'none' : 'flex';
+  if(dashboardContent) dashboardContent.style.display = ok ? 'block' : 'none';
+  
   if (ok) loadDashboardData();
 }
 
 function handleLogin(e) {
   if (e) e.preventDefault();
-  const pass = document.getElementById('adminPassword').value;
-  if (pass === ADMIN_PASS) {
+  const passInput = document.getElementById('adminPassword');
+  if (!passInput) return;
+
+  if (passInput.value === ADMIN_PASS) {
     sessionStorage.setItem('adminLoggedIn', 'true');
     checkAdminSession();
     showToast('تم تسجيل الدخول بنجاح');
@@ -71,7 +83,7 @@ function handleLogout() {
   showToast('تم تسجيل الخروج');
 }
 
-// ===== تهيئة ومعالجة النموذج (Form Handling) =====
+// ===== معالجة نموذج إرسال المساهمة =====
 function setupForm() {
   const form = document.getElementById('contributeForm');
   if (!form) return;
@@ -92,7 +104,7 @@ function setupForm() {
         throw new Error('الرجاء إرفاق صورة أو ملف إيصال التحويل المالي.');
       }
 
-      // 1. إعداد تفاصيل المساهمة المبدئية
+      // تجهيز البيانات
       const contributionData = {
         name: document.getElementById('fullName').value,
         phone: document.getElementById('phoneNumber').value,
@@ -103,14 +115,12 @@ function setupForm() {
         receipt_name: file.name
       };
 
-      // توليد معرف عشوائي مؤقت لاسم الملف
       const tempId = 'rec_' + Math.random().toString(36).substr(2, 9);
       
-      // 2. رفع الإيصال إلى الـ Storage
+      // رفع الملف ثم الإدخال بقاعدة البيانات
       const uploadRes = await dbUploadReceipt(file, tempId);
       contributionData.receipt_url = uploadRes.url;
 
-      // 3. إدخال البيانات في الجدول (Database)
       await dbInsert(contributionData);
 
       showToast('تم إرسال طلب المساهمة بنجاح، شكراً لك!');
@@ -118,7 +128,7 @@ function setupForm() {
       switchPage('home');
     } catch (err) {
       console.error(err);
-      showToast(err.message || 'حدث خطأ أثناء معالجة الطلب', 'danger');
+      showToast(err.message || 'حدث خطأ أثناء معالجة الطلب، تأكد من إعدادات الاتصال', 'danger');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
@@ -126,14 +136,12 @@ function setupForm() {
   });
 }
 
-// ===== إدارة وعرض لوحة التحكم (Dashboard) =====
-let allContributions = [];
-
+// ===== لوحة التحكم وجلب البيانات =====
 async function loadDashboardData() {
   const tbody = document.getElementById('dashboardTableBody');
   if (!tbody) return;
   
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري تحميل البيانات...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري تحميل البيانات الحقيقية...</td></tr>';
   
   try {
     allContributions = await dbGetAll();
@@ -141,7 +149,7 @@ async function loadDashboardData() {
     updateStats(allContributions);
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">فشل تحميل البيانات من السيرفر</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">فشل في جلب البيانات، يرجى التحقق من اتصال سوبابيز</td></tr>';
   }
 }
 
@@ -149,8 +157,8 @@ function renderTable(list) {
   const tbody = document.getElementById('dashboardTableBody');
   if (!tbody) return;
   
-  if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد مساهمات مسجلة حالياً.</td></tr>';
+  if (!list || list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد مساهمات مسجلة حالياً في قاعدة البيانات.</td></tr>';
     return;
   }
 
@@ -172,6 +180,7 @@ function renderTable(list) {
 }
 
 function updateStats(list) {
+  if(!list) return;
   const totalAmount = list
     .filter(item => item.status === 'approved' || item.status === 'تمت الموافقة')
     .reduce((sum, item) => sum + Number(item.amount), 0);
@@ -192,17 +201,13 @@ function setupFilters() {
   const searchInput = document.getElementById('tableSearch');
   const filterSelect = document.getElementById('tableFilter');
 
-  if (searchInput) {
-    searchInput.addEventListener('input', () => filterAndSearch());
-  }
-  if (filterSelect) {
-    filterSelect.addEventListener('change', () => filterAndSearch());
-  }
+  if (searchInput) searchInput.addEventListener('input', () => filterAndSearch());
+  if (filterSelect) filterSelect.addEventListener('change', () => filterAndSearch());
 }
 
 function filterAndSearch() {
-  const query = document.getElementById('tableSearch').value.toLowerCase();
-  const filterValue = document.getElementById('tableFilter').value;
+  const query = document.getElementById('tableSearch')?.value.toLowerCase() || '';
+  const filterValue = document.getElementById('tableFilter')?.value || 'all';
 
   let filtered = allContributions.filter(item => {
     const matchQuery = item.name.toLowerCase().includes(query) || item.phone.includes(query);
@@ -222,7 +227,7 @@ function filterAndSearch() {
   renderTable(filtered);
 }
 
-// ===== تفاصيل المنبثقة وإدارة الحالات =====
+// ===== نافذة تفاصيل الطلب الإدارية =====
 function openDetails(id) {
   selectedContribution = allContributions.find(c => c.id === id);
   if (!selectedContribution) return;
@@ -230,7 +235,6 @@ function openDetails(id) {
   const modalBody = document.getElementById('modalBody');
   if (!modalBody) return;
 
-  // الحفاظ على مرونة قراءة الرابط من حقل receipt الجديد
   const receiptLink = selectedContribution.receipt || '#';
 
   modalBody.innerHTML = `
@@ -246,7 +250,7 @@ function openDetails(id) {
     <hr style="margin:1.5rem 0; border:0; border-top:1px solid var(--border);">
     <div style="text-align:center; margin-bottom:1.5rem;">
       <p style="margin-bottom:0.5rem;"><strong>إيصال المرفق:</strong></p>
-      ${selectedContribution.receipt ? `<a href="${receiptLink}" target="_blank"><img src="${receiptLink}" style="max-width:100%; max-height:250px; border-radius:8px; border:1px solid var(--border); box-shadow:var(--shadow-sm);"></a>` : '<p>لا يوجد إيصال مرفق</p>'}
+      ${selectedContribution.receipt ? `<a href="${receiptLink}" target="_blank"><img src="${receiptLink}" style="max-width:100%; max-height:250px; border-radius:8px; border:1px solid var(--border);"></a>` : '<p>لا يوجد إيصال مرفق</p>'}
     </div>
     <div class="status-actions" style="display:flex; gap:0.5rem; justify-content:center;">
       <button class="btn btn-primary" onclick="updateStatusAction('تمت الموافقة')">✅ اعتماد والموافقة</button>
@@ -254,7 +258,7 @@ function openDetails(id) {
     </div>
   `;
 
-  document.getElementById('detailsModal').classList.add('active');
+  document.getElementById('detailsModal')?.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 
@@ -267,37 +271,27 @@ async function updateStatusAction(newStatus) {
     loadDashboardData();
   } catch (err) {
     console.error(err);
-    showToast('فشل في تحديث الحالة', 'danger');
+    showToast('فشل في تحديث الحالة بقاعدة البيانات', 'danger');
   }
 }
 
 function closeModal() {
-  document.getElementById('detailsModal').classList.remove('active');
+  document.getElementById('detailsModal')?.classList.remove('active');
   document.body.style.overflow = 'auto';
 }
 
-// ===== Helpers الدوال المساعدة المحدثة بالعربية للتوافق التام =====
+// ===== الدوال المساعدة وتنسيق الحالات والعرض =====
 function statusBadge(s) {
-  // الخريطة البرمجية لربط النصوص بفئات التصميم والتلوين CSS
   const map = { 
-    'pending': 'badge-pending', 
-    'قيد المراجعة': 'badge-pending', 
-    'approved': 'badge-approved', 
-    'تمت الموافقة': 'badge-approved', 
-    'rejected': 'badge-rejected', 
-    'مرفوض': 'badge-rejected' 
+    'pending': 'badge-pending', 'قيد المراجعة': 'badge-pending', 
+    'approved': 'badge-approved', 'تمت الموافقة': 'badge-approved', 
+    'rejected': 'badge-rejected', 'مرفوض': 'badge-rejected' 
   };
-  
-  // لتوحيد العرض بالنص العربي النظيف داخل لوحة التحكم لمدير النظام
   const ar = { 
-    'pending': 'قيد المراجعة', 
-    'قيد المراجعة': 'قيد المراجعة', 
-    'approved': 'تمت الموافقة', 
-    'تمت الموافقة': 'تمت الموافقة', 
-    'rejected': 'مرفوض', 
-    'مرفوض': 'مرفوض' 
+    'pending': 'قيد المراجعة', 'قيد المراجعة': 'قيد المراجعة', 
+    'approved': 'تمت الموافقة', 'تمت الموافقة': 'تمت الموافقة', 
+    'rejected': 'مرفوض', 'مرفوض': 'مرفوض' 
   };
-  
   return `<span class="badge ${map[s] || 'badge-pending'}">${ar[s] || s}</span>`;
 }
 
@@ -309,4 +303,9 @@ function formatDate(iso) {
 function showToast(msg, type = 'success') {
   document.querySelector('.toast')?.remove();
   const t = document.createElement('div');
-  t.className = `toast toast-${type}`;\n  t.textContent = msg;\n  document.body.appendChild(t);\n  setTimeout(() => t.classList.add('show'), 10);\n  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);\n}
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+}
