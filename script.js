@@ -41,12 +41,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 4. مراقبة زر رفع الملف وإظهار اسم الملف المرفوع في الكونسول
+  // 4. مراقبة زر رفع الملف وإظهار اسم الملف المرفوع وتحديث المعاينة والـ DOM
   const fileInput = document.getElementById('receiptFile');
+  const uploadArea = document.getElementById('uploadArea');
+  const filePreview = document.getElementById('filePreview');
+
+  // ربط الضغط على المربع المخصص بفتح نافذة تصفح الملفات المخفية
+  if (uploadArea && fileInput) {
+    uploadArea.addEventListener('click', () => fileInput.click());
+  }
+
   if (fileInput) {
     fileInput.addEventListener('change', (e) => {
-      const fileName = e.target.files[0]?.name || "لم يتم اختيار ملف";
+      const file = e.target.files[0];
+      const fileName = file ? file.name : "لم يتم اختيار ملف";
       console.log("الملف المختار حالياً:", fileName);
+      
+      if (filePreview && file) {
+        filePreview.innerHTML = `<div style="padding: 8px; background: var(--light-bg); border: 1px dashed var(--primary); border-radius: 6px; margin-top: 10px; color: var(--secondary); font-size: 13px;">📄 المرفق الحالي: <strong>${fileName}</strong></div>`;
+      }
       showToast(`تم اختيار الملف: ${fileName}`, 'success');
     });
   }
@@ -152,6 +165,9 @@ function setupForm() {
       showToast('تم إرسال طلب المساهمة بنجاح، شكراً لك!');
       form.reset();
       
+      const filePreview = document.getElementById('filePreview');
+      if (filePreview) filePreview.innerHTML = '';
+
       // إظهار رسالة النجاح الثابتة في الصفحة إن وجدت
       const successMsg = document.getElementById('successMsg');
       if (successMsg) {
@@ -198,7 +214,12 @@ function renderTable(list) {
     return;
   }
 
-  tbody.innerHTML = list.map(item => `
+  tbody.innerHTML = list.map(item => {
+    // التحقق من تفعيل زر الكتيب للطلبات المعتمدة فقط
+    const isApproved = item.status === 'approved' || item.status === 'تمت الموافقة';
+    const bookletButton = isApproved ? `<button class="btn btn-outline" style="padding:4px 8px; font-size:12px; background:#1E9196; color:white; border-color:#1E9196;" onclick="openBooklet('${item.id}')">📑 الكتيب</button>` : '';
+
+    return `
     <tr>
       <td><strong>${item.name}</strong></td>
       <td>${item.phone}</td>
@@ -207,13 +228,15 @@ function renderTable(list) {
       <td>${formatDate(item.created_at)}</td>
       <td>${statusBadge(item.status)}</td>
       <td>
-        <div style="display:flex; gap:8px; justify-content:center;">
+        <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
           ${item.receipt ? `<a href="${item.receipt}" target="_blank" class="btn btn-outline" style="padding:4px 8px; font-size:12px; text-decoration:none;">📄 الإيصال</a>` : '—'}
-          <button class="btn btn-primary" style="padding: 4px 8px; font-size:12px;" onclick="openDetails(${item.id})">إدارة</button>
+          ${bookletButton}
+          <button class="btn btn-primary" style="padding: 4px 8px; font-size:12px;" onclick="openDetails('${item.id}')">إدارة</button>
         </div>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function updateStats(list) {
@@ -242,7 +265,7 @@ function updateStats(list) {
 
 // ===== المنبثقة الإدارية وتغيير الحالات =====
 function openDetails(id) {
-  selectedContribution = allContributions.find(c => c.id === id);
+  selectedContribution = allContributions.find(c => c.id == id);
   if (!selectedContribution) return;
 
   const modalBody = document.getElementById('modalBody');
@@ -262,7 +285,7 @@ function openDetails(id) {
     </div>
     <hr style="margin:1.5rem 0; border:0; border-top:1px solid var(--border);">
     <div style="text-align:center; margin-bottom:1.5rem;">
-      <p style="margin-bottom:0.5rem;"><strong>إيصال المرفق:</strong></p>
+      <p style="margin-bottom:0.5rem;"><strong>الإيصال المرفق:</strong></p>
       ${selectedContribution.receipt ? `<a href="${receiptLink}" target="_blank"><img src="${receiptLink}" style="max-width:100%; max-height:250px; border-radius:8px; border:1px solid #E5E7EB;"></a>` : '<p>لا يوجد إيصال مرفق</p>'}
     </div>
     <div class="status-actions" style="display:flex; gap:0.5rem; justify-content:center;">
@@ -293,7 +316,87 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
-// ===== دالات المساعدة للـ Booklet المذكورة في HTML =====
+// ===== دالة نسخ الآيبان المربوطة بالـ HTML =====
+function copyIBAN() {
+  const ibanText = "SA0880000868608016214271";
+  navigator.clipboard.writeText(ibanText).then(() => {
+    showToast('تم نسخ رقم الآيبان بنجاح');
+  }).catch(err => {
+    console.error("فشل النسخ تلقائياً:", err);
+    showToast('فشل في النسخ التلقائي، يرجى نسخه يدوياً', 'danger');
+  });
+}
+
+// ===== دالات المساعدة للـ Booklet وتوليد شهادة الأسهم التعليمية لبرنامج إنجاز =====
+function openBooklet(id) {
+  const contribution = allContributions.find(c => c.id == id);
+  if (!contribution) return;
+
+  const sharesCount = Math.floor(Number(contribution.amount) / 50) || 1;
+  const bookletBody = document.getElementById('bookletBody');
+  if (!bookletBody) return;
+
+  bookletBody.innerHTML = `
+    <div id="bookletPrintArea" style="padding: 25px; border: 3px double #1E9196; border-radius: 12px; background: #fff; font-family: 'Tajawal', sans-serif; color: #0A1C33; direction: rtl; text-align: right; box-shadow: var(--shadow-md);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1E9196; padding-bottom: 10px; margin-bottom: 20px;">
+        <div>
+          <h2 style="color: #1E9196; margin: 0; font-size: 22px;">إنجاز السعودية</h2>
+          <p style="font-size: 12px; margin: 4px 0 0 0; color: #6B7280;">برنامج الشركة للتدريب العملي</p>
+        </div>
+        <div style="text-align: left;">
+          <h3 style="margin:0; color:#0A1C33; font-size: 16px;">شهادة الأسهم التعليمية</h3>
+          <p style="font-size: 12px; margin: 4px 0 0 0; color: #6B7280;">التاريخ: ${formatDate(contribution.created_at)}</p>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 20px; line-height: 1.8;">
+        <p style="font-size: 15px;">اسم الشركة الناشئة: <span style="color: #0D6C70; font-weight: bold;">Fly Light Logistics Solutions</span></p>
+        <hr style="border: 0; border-top: 1px solid #E5E7EB; margin: 12px 0;">
+        <p>تشهد إدارة الشركة بأن شريك النجاح المساهم:</p>
+        <p style="font-size: 18px; color: #1E9196; font-weight: bold; margin: 10px 0; padding-right: 15px; border-right: 4px solid #1E9196;">${contribution.name}</p>
+        <p>رقم الهاتف الموثق: <strong>${contribution.phone}</strong></p>
+        <p>يملك عدد <span style="font-size: 18px; color: #0D6C70; font-weight: bold;">(${sharesCount})</span> أسهماً من أسهم رأس مال الشركة بقيمة إسمية قدرها <strong>( ٥٠ ) خمسون ريالاً سعودياً</strong> للسهم الواحد، لتبلغ القيمة الإجمالية للمساهمة المعتمدة <strong>${contribution.amount} ريال سعودي</strong>.</p>
+      </div>
+
+      <div style="background: #F7F9FA; padding: 12px; border-radius: 8px; font-size: 13px; color: #4B5563; border-left: 4px solid #1E9196; margin-bottom: 15px;">
+        <p style="margin: 0 0 5px 0;">• السهم الواحد غير قابل للنقل ويصبح لاغياً بمجرد تصفية وانتهاء نشاط الشركة لغرض التدريب.</p>
+        <p style="margin: 0;">• يعين المساهم بموجب هذه الشهادة مدير المالية كوكيل قانوني له في كافة اجتماعات مجلس الإدارة.</p>
+      </div>
+
+      <div style="margin-top: 25px; border-top: 1px dashed #CDD5DF; padding-top: 12px; font-size: 11px; color: #9CA3AF; text-align: justify; line-height: 1.5;">
+        <strong>تنويه وإخلاء مسؤولية:</strong> إن برنامج إنجاز السعودية غير مسؤول عن أي معلومات واردة في هذه الشهادة، وقد طُبعت وحُفظت بالكامل لأغراض تعليمية وتدريبية بحتة ولا تمثل أي التزام مالي أو ذمم حقيقية على البرنامج أو طاقمه، واعتُبرت فقط كجزء متمم لاكتساب المهارات التطبيقية للطلاب المتدربين.
+      </div>
+    </div>
+  `;
+
+  document.getElementById('bookletModal')?.classList.add('active');
+}
+
+function printBooklet() {
+  const element = document.getElementById('bookletPrintArea');
+  if (!element) {
+    showToast('لا توجد بيانات لطباعتها', 'danger');
+    return;
+  }
+  
+  // تشغيل مكتبة html2pdf المرفقة بالـ HTML لتوليد ملف PDF عالي الجودة وحفظه فوراً
+  const opt = {
+    margin:       10,
+    filename:     `شهادة_أسهم_FlyLight_${Date.now()}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  html2pdf().set(opt).from(element).save()
+    .then(() => showToast('تم تجهيز الملف وتحميله كـ PDF'))
+    .catch(err => {
+      console.error(err);
+      showToast('حدث خطأ أثناء توليد الـ PDF، جاري الطباعة الاعتيادية', 'warning');
+      window.print();
+    });
+}
+
 function closeBooklet() {
   document.getElementById('bookletModal')?.classList.remove('active');
 }
