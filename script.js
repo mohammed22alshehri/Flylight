@@ -1,9 +1,11 @@
 // ===== إعداد Supabase =====
+// تنبيه: ضع روابط مشروعك الحقيقي هنا ليتم الاتصال بقاعدة البيانات بنجاح
 const SUPABASE_URL = 'SUPABASE_URL'; 
 const SUPABASE_KEY = 'SUPABASE_KEY';
 
 let supabase = null;
 
+// حماية الكود: منع توقف الأزرار إذا كانت الروابط فارغة أو تحتوي على نص عربي
 try {
   if (SUPABASE_URL && !SUPABASE_URL.includes('SUPABASE_URL')) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -21,6 +23,7 @@ let selectedContribution = null;
 // ===== جلب البيانات من Supabase أو الذاكرة المؤقتة =====
 async function fetchContributions() {
   if (!supabase) {
+    // نمط تجريبي محلي لقراءة البيانات المخزنة مؤقتاً لكي لا تتوقف لوحة التحكم
     localContributions = JSON.parse(localStorage.getItem('flylight_backup')) || [];
     return localContributions;
   }
@@ -42,34 +45,29 @@ async function fetchContributions() {
 
 // ===== تهيئة الأحداث والعمليات عند تحميل الصفحة =====
 document.addEventListener('DOMContentLoaded', function () {
-  
   // 1. نظام القائمة المتجاوبة (Hamburger)
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('navLinks');
 
   if (hamburger && navLinks) {
-    hamburger.addEventListener('click', function (e) {
-      e.preventDefault();
+    hamburger.addEventListener('click', function () {
       hamburger.classList.toggle('open');
       navLinks.classList.toggle('open');
     });
 
     navLinks.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
+      link.addEventListener('click', () => {
         hamburger.classList.remove('open');
         navLinks.classList.remove('open');
       });
     });
   }
 
-  // 2. المراقبة المباشرة والآمنة لجميع نقرات الصفحة (تمنع الهاشتاغ تماماً)
-  document.addEventListener('click', function (e) {
+  // 2. تفعيل التنقل بين الصفحات لجميع الأزرار والروابط التي تحمل خاصية data-page
+  document.body.addEventListener('click', function (e) {
     const targetButton = e.target.closest('[data-page]');
-    
     if (targetButton) {
-      e.preventDefault(); // إيقاف الهاشتاغ # فوراً وعن أي عنصر فرعي
-      e.stopPropagation();
+      e.preventDefault(); // مـنـع ظـهـور الـهـاشـتـاغ #
       const pageName = targetButton.getAttribute('data-page');
       switchPage(pageName);
     }
@@ -88,7 +86,7 @@ function switchPage(pageName) {
   const target = document.getElementById(pageName);
   if (target) target.classList.add('active');
 
-  const activeLink = document.querySelector(`[data-page="${pageName}"]`);
+  const activeLink = document.querySelector(`.nav-links [data-page="${pageName}"]`);
   if (activeLink) activeLink.classList.add('active');
 
   if (pageName === 'dashboard') {
@@ -101,15 +99,8 @@ function switchPage(pageName) {
 // ===== نظام تسجيل دخول الإدارة =====
 async function checkAdminSession() {
   const loggedIn = sessionStorage.getItem('adminLoggedIn');
-  
-  const adminLoginEl = document.getElementById('adminLogin');
-  const adminContentEl = document.getElementById('adminContent');
-  
-  if (adminLoginEl && adminContentEl) {
-    adminLoginEl.style.display = loggedIn ? 'none' : 'flex';
-    adminContentEl.style.display = loggedIn ? 'block' : 'none';
-  }
-  
+  document.getElementById('adminLogin').style.display = loggedIn ? 'none' : 'flex';
+  document.getElementById('adminContent').style.display = loggedIn ? 'block' : 'none';
   if (loggedIn) {
     await fetchContributions();
     updateDashboard();
@@ -123,10 +114,10 @@ function adminLogin() {
   if (pass === ADMIN_PASS) {
     sessionStorage.setItem('adminLoggedIn', 'true');
     document.getElementById('adminPassword').value = '';
-    if (errorEl) errorEl.style.display = 'none';
+    errorEl.style.display = 'none';
     checkAdminSession();
   } else {
-    if (errorEl) errorEl.style.display = 'block';
+    errorEl.style.display = 'block';
     document.getElementById('adminPassword').value = '';
   }
 }
@@ -156,17 +147,12 @@ function setupFileUpload() {
   const filePreview = document.getElementById('filePreview');
   if (!uploadArea || !fileInput) return;
 
-  uploadArea.addEventListener('click', (e) => {
-    e.preventDefault();
-    fileInput.click();
-  });
+  uploadArea.addEventListener('click', () => fileInput.click());
 
   fileInput.addEventListener('change', e => {
     if (e.target.files.length > 0) {
-      if (filePreview) {
-        filePreview.innerHTML = `<span>✓ تم اختيار: ${e.target.files[0].name}</span>`;
-        filePreview.style.display = 'block';
-      }
+      filePreview.innerHTML = `<span>✓ تم اختيار: ${e.target.files[0].name}</span>`;
+      filePreview.style.display = 'block';
     }
   });
 }
@@ -209,6 +195,7 @@ function setupForm() {
       };
 
       if (!supabase) {
+        // حفظ تجريبي محلي لتجربة عمل الموقع بالكامل قبل ربط قاعدة البيانات
         let backup = JSON.parse(localStorage.getItem('flylight_backup')) || [];
         backup.push(contributionData);
         localStorage.setItem('flylight_backup', JSON.stringify(backup));
@@ -220,8 +207,7 @@ function setupForm() {
           setTimeout(() => successEl.classList.remove('active'), 4000);
         }
         form.reset();
-        const preview = document.getElementById('filePreview');
-        if (preview) preview.style.display = 'none';
+        document.getElementById('filePreview').style.display = 'none';
         submitBtn.textContent = 'تقديم المساهمة';
         submitBtn.disabled = false;
         return;
@@ -238,8 +224,7 @@ function setupForm() {
           setTimeout(() => successEl.classList.remove('active'), 4000);
         }
         form.reset();
-        const preview = document.getElementById('filePreview');
-        if (preview) preview.style.display = 'none';
+        document.getElementById('filePreview').style.display = 'none';
       }
       
       submitBtn.textContent = 'تقديم المساهمة';
