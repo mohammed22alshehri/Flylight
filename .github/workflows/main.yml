@@ -17,11 +17,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Create Env File for Production
+      # 🚀 الخطوة الجديدة والمعدلة هنا
+      - name: Inject Secrets into Files
         run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
-          echo "ADMIN_PASS=${{ secrets.ADMIN_PASS }}" >> .env
+          sed -i "s|PLACEHOLDER_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" supabase.js
+          sed -i "s|PLACEHOLDER_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" supabase.js
+          sed -i "s|PLACEHOLDER_ADMIN_PASS|${{ secrets.ADMIN_PASS }}|g" script.js
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
