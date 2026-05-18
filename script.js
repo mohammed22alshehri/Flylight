@@ -1,5 +1,5 @@
 // ===== الثوابت =====
-const ADMIN_PASS = 'ADMIN_PASS';
+const expectedPassword = 'PLACEHOLDER_ADMIN_PASS';
 let selectedContribution = null;
 let allContributions = [];
 
