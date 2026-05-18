@@ -1,10 +1,12 @@
 // ===== Supabase Configuration =====
 // استبدل هذه القيم بقيم مشروعك من supabase.com
-const SUPABASE_URL = 'SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'SUPABASE_KEY';
+// ===== Supabase Configuration =====
+// يقرأ القيم تلقائياً من بيئة التشغيل دون كتابتها في السورس كود
+const SUPABASE_URL = window.env?.SUPABASE_URL || process.env.SUPABASE_URL || 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'YOUR_ANON_KEY';
+
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // ===== Database Operations =====
 
 async function dbInsert(contribution) {
