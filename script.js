@@ -5,10 +5,10 @@ let allContributions = [];
 
 // ===== عند تحميل الصفحة بالكامل =====
 document.addEventListener('DOMContentLoaded', () => {
-  // تهيئة القائمة المتنقلة للموبايل (مهم جداً لتوافق الجوال)
+  
+  // 1. تشغيل وتفعيل القائمة المتنقلة للموبايل (Hamburger Menu)
   const hamburger = document.getElementById('hamburger');
   const navLinks  = document.getElementById('navLinks');
-  
   if (hamburger && navLinks) {
     hamburger.addEventListener('click', () => {
       hamburger.classList.toggle('open');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  // ربط أزرار القائمة بالتنقل بين الصفحات
+  // 2. ربط أزرار القائمة العلوية بالتنقل بين الصفحات
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -32,12 +32,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // تشغيل العمليات بشكل آمن
+  // 3. تفعيل زر المساهمة الموجود في الهيرو سيكشن (إصلاح المشكلة الخامسة)
+  const heroContributeBtn = document.querySelector('.hero-buttons .btn-primary');
+  if (heroContributeBtn) {
+    heroContributeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchPage('contribute'); // ينقلك فوراً لصفحة الاستمارة
+    });
+  }
+
+  // 4. تحسين استجابة شكل زر رفع الملف وإظهار اسم الملف المرفوع للمستخدم
+  const fileInput = document.getElementById('receiptFile');
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const fileName = e.target.files[0]?.name || "لم يتم اختيار ملف";
+      // إذا كان لديك عنصر لعرض اسم الملف، سيتم تحديثه هنا
+      console.log("الملف المختار حالياً:", fileName);
+    });
+  }
+
+  // 5. تشغيل النماذج والفلاتر بشكل آمن لا يعطل المتصفح
   try { setupFilters(); } catch(e) { console.error(e); }
   try { setupForm(); }    catch(e) { console.error(e); }
 });
 
-// ===== التنقل بين الصفحات =====
+// ===== آلية التنقل الفوري المتوافقة مع الموبايل =====
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -52,7 +71,7 @@ function switchPage(name) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ===== الإدارة والتحقق من كلمة المرور =====
+// ===== التحقق من لوحة التحكم والإدارة =====
 function checkAdminSession() {
   const ok = sessionStorage.getItem('adminLoggedIn');
   const loginForm = document.getElementById('adminLogin');
@@ -84,7 +103,7 @@ function handleLogout() {
   showToast('تم تسجيل الخروج');
 }
 
-// ===== معالجة نموذج إرسال المساهمة =====
+// ===== معالجة الاستمارة ورفع الملفات =====
 function setupForm() {
   const form = document.getElementById('contributeForm');
   if (!form) return;
@@ -92,11 +111,8 @@ function setupForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
+    const originalText = submitBtn?.textContent || 'إرسال';
     
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'جاري إرسال البيانات...';
-
     try {
       const fileInput = document.getElementById('receiptFile');
       const file = fileInput ? fileInput.files[0] : null;
@@ -105,21 +121,29 @@ function setupForm() {
         throw new Error('الرجاء إرفاق صورة أو ملف إيصال التحويل المالي.');
       }
 
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جاري إرسال البيانات...';
+      }
+
+      // إعداد كائن البيانات الموجه لـ Supabase
       const contributionData = {
         name: document.getElementById('fullName').value,
         phone: document.getElementById('phoneNumber').value,
         email: document.getElementById('emailAddress').value,
         amount: parseFloat(document.getElementById('stockAmount').value),
-        notes: document.getElementById('notes').value || '',
+        notes: document.getElementById('notes')?.value || '',
         receipt_url: '',
         receipt_name: file.name
       };
 
       const tempId = 'rec_' + Math.random().toString(36).substr(2, 9);
       
+      // رفع الملف إلى كبسولة التخزين أولاً
       const uploadRes = await dbUploadReceipt(file, tempId);
       contributionData.receipt_url = uploadRes.url;
 
+      // حفظ البيانات بالجدول الرئيسي
       await dbInsert(contributionData);
 
       showToast('تم إرسال طلب المساهمة بنجاح، شكراً لك!');
@@ -127,20 +151,22 @@ function setupForm() {
       switchPage('home');
     } catch (err) {
       console.error(err);
-      showToast(err.message || 'حدث خطأ أثناء معالجة الطلب، تأكد من إعدادات الاتصال', 'danger');
+      showToast(err.message || 'حدث خطأ أثناء إرسال الطلب', 'danger');
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     }
   });
 }
 
-// ===== لوحة التحكم وجلب البيانات =====
+// ===== جلب وعرض بيانات لوحة التحكم =====
 async function loadDashboardData() {
   const tbody = document.getElementById('dashboardTableBody');
   if (!tbody) return;
   
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري تحميل البيانات الحقيقية...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري تحميل البيانات...</td></tr>';
   
   try {
     allContributions = await dbGetAll();
@@ -148,7 +174,7 @@ async function loadDashboardData() {
     updateStats(allContributions);
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">فشل في جلب البيانات، يرجى التحقق من اتصال سوبابيز</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">فشل في جلب البيانات، يرجى فحص إعدادات السيرفر</td></tr>';
   }
 }
 
@@ -157,7 +183,7 @@ function renderTable(list) {
   if (!tbody) return;
   
   if (!list || list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد مساهمات مسجلة حالياً في قاعدة البيانات.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد مساهمات مسجلة حالياً.</td></tr>';
     return;
   }
 
@@ -210,8 +236,8 @@ function filterAndSearch() {
 
   let filtered = allContributions.filter(item => {
     const matchQuery = item.name.toLowerCase().includes(query) || item.phone.includes(query);
-    
     let matchFilter = true;
+    
     if (filterValue === 'pending') {
       matchFilter = (item.status === 'pending' || item.status === 'قيد المراجعة');
     } else if (filterValue === 'approved') {
@@ -226,7 +252,7 @@ function filterAndSearch() {
   renderTable(filtered);
 }
 
-// ===== نافذة تفاصيل الطلب الإدارية =====
+// ===== المنبثقة الإدارية وتغيير الحالات =====
 function openDetails(id) {
   selectedContribution = allContributions.find(c => c.id === id);
   if (!selectedContribution) return;
@@ -279,7 +305,7 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
-// ===== الدوال المساعدة وتنسيق الحالات والعرض =====
+// ===== الحالات والدوال المساعدة للـ Toast والتواريخ =====
 function statusBadge(s) {
   const map = { 
     'pending': 'badge-pending', 'قيد المراجعة': 'badge-pending', 
@@ -299,12 +325,22 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ar-SA', { year:'numeric', month:'short', day:'numeric' });
 }
 
+// 🛠️ تم حقن خصائص ستايل حمائية مدمجة لضمان ظهور رسالة الخطأ والـ Toast أعلى جميع الطبقات (المشكلة الثانية)
 function showToast(msg, type = 'success') {
   document.querySelector('.toast')?.remove();
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
+  
+  // فرض ظهور الرسالة في الأعلى فوق كل شيء بشكل حاسم
+  t.style.position = 'fixed';
+  t.style.zIndex = '999999'; 
+  
   t.textContent = msg;
   document.body.appendChild(t);
+  
   setTimeout(() => t.classList.add('show'), 10);
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+  setTimeout(() => { 
+    t.classList.remove('show'); 
+    setTimeout(() => t.remove(), 300); 
+  }, 3500);
 }
