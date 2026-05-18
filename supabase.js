@@ -9,19 +9,10 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ===== Database Operations =====
 
 async function dbInsert(contribution) {
+  // تم التعديل لتتوافق الأسماء مع السكربت الجديد لقاعدة البيانات
   const { data, error } = await db
     .from('contributions')
-    .insert([{
-      name:         contribution.name,
-      phone:        contribution.phone,
-      email:        contribution.email,
-      amount:       contribution.amount,
-      notes:        contribution.notes,
-      receipt_url:  contribution.receipt_url,
-      receipt_name: contribution.receipt_name,
-      status:       'pending',
-      created_at:   new Date().toISOString()
-    }])
+    .insert([{\n      name:         contribution.name,\n      phone:        contribution.phone,\n      email:        contribution.email,\n      amount:       contribution.amount,\n      notes:        contribution.notes,\n      receipt:      contribution.receipt_url, // تطابق حقل receipt في جدولك\n      receipt_name: contribution.receipt_name,\n      status:       'قيد المراجعة',            // تطابق القيمة الافتراضية في جدولك\n      created_at:   new Date().toISOString()\n    }])
     .select()
     .single();
 
@@ -40,9 +31,10 @@ async function dbGetAll() {
 }
 
 async function dbUpdateStatus(id, status) {
+  // تحديث حالة الطلب بناءً على اختيارات لوحة التحكم
   const { error } = await db
     .from('contributions')
-    .update({ status, reviewed_at: new Date().toISOString() })
+    .update({ status: status })
     .eq('id', id);
 
   if (error) throw error;
@@ -50,14 +42,4 @@ async function dbUpdateStatus(id, status) {
 
 async function dbUploadReceipt(file, id) {
   const ext = file.name.split('.').pop();
-  const path = `receipts/${id}.${ext}`;
-
-  const { error } = await db.storage
-    .from('receipts')
-    .upload(path, file, { upsert: true });
-
-  if (error) throw error;
-
-  const { data } = db.storage.from('receipts').getPublicUrl(path);
-  return data.publicUrl;
-}
+  const path = `receipts/${id}.${ext}`;\n\n  const { error } = await db.storage\n    .from('receipts')\n    .upload(path, file);\n\n  if (error) throw error;\n\n  const { data } = db.storage\n    .from('receipts')\n    .getPublicUrl(path);\n\n  return { url: data.publicUrl, name: file.name };\n}
