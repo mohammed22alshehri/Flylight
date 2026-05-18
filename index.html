@@ -1,819 +1,268 @@
-<style>
-:root {
-  --primary: #1E9196;
-  --primary-dark: #0D6C70;
-  --secondary: #0A1C33;
-  --accent: #1E9196;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --light: #f8fafc;
-  --border: #e2e8f0;
-  --text-dark: #0A1C33;
-  --text-muted: #6b7280;
-  --white: #ffffff;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--light);
-  color: var(--text-dark);
-}
-
-.wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-header {
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  padding: 0 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-nav {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 70px;
-}
-
-.logo {
-  font-size: 22px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
-}
-
-.nav-links {
-  display: flex;
-  gap: 2rem;
-  list-style: none;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: var(--text-muted);
-  font-weight: 500;
-  font-size: 15px;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-}
-
-.nav-links a:hover {
-  color: var(--primary);
-  background: rgba(30, 145, 150, 0.08);
-}
-
-.nav-links a.active {
-  color: var(--primary);
-  background: rgba(30, 145, 150, 0.12);
-  border-color: var(--primary);
-}
-
-main {
-  flex: 1;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-}
-
-.page { display: none; }
-.page.active { display: block; animation: fadeIn 0.3s ease; }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.hero {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.hero h1 {
-  font-size: 42px;
-  font-weight: 800;
-  color: var(--secondary);
-  margin-bottom: 1rem;
-  letter-spacing: -1px;
-}
-
-.hero p {
-  font-size: 18px;
-  color: var(--text-muted);
-  max-width: 600px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-}
-
-.section {
-  margin-bottom: 4rem;
-}
-
-.section-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--secondary);
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 3px solid var(--primary);
-  display: inline-block;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 6px 24px rgba(30, 145, 150, 0.15);
-  transform: translateY(-3px);
-}
-
-.card-icon {
-  font-size: 36px;
-  margin-bottom: 1rem;
-  color: var(--primary);
-}
-
-.card h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--secondary);
-  margin-bottom: 0.75rem;
-}
-
-.card p {
-  font-size: 15px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.form-container {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 3rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.form-group {
-  margin-bottom: 1.75rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--secondary);
-  font-size: 15px;
-}
-
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(30, 145, 150, 0.12);
-}
-
-.iban-box {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: var(--white);
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
-  margin: 2rem 0;
-  box-shadow: 0 4px 16px rgba(30, 145, 150, 0.2);
-}
-
-.iban-box p {
-  font-size: 14px;
-  margin-bottom: 0.75rem;
-  opacity: 0.9;
-}
-
-.iban-code {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  font-family: 'Monaco', 'Courier', monospace;
-}
-
-.upload-box {
-  border: 2px dashed var(--primary);
-  border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(30, 145, 150, 0.03);
-}
-
-.upload-box:hover {
-  background: rgba(30, 145, 150, 0.08);
-  border-color: var(--primary-dark);
-  transform: scale(1.01);
-}
-
-.upload-box-icon {
-  font-size: 48px;
-  color: var(--primary);
-  margin-bottom: 0.75rem;
-}
-
-.file-input { display: none; }
-
-.button {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: var(--white);
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(30, 145, 150, 0.25);
-}
-
-.button:hover {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(30, 145, 150, 0.35);
-}
-
-.button:active {
-  transform: translateY(0);
-}
-
-.button.secondary {
-  background: var(--text-muted);
-}
-
-.button.secondary:hover {
-  background: var(--secondary);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.stat-card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.75rem;
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 36px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-table thead {
-  background: var(--light);
-  border-bottom: 2px solid var(--border);
-}
-
-table th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 700;
-  color: var(--secondary);
-}
-
-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-dark);
-}
-
-table tr:hover {
-  background: var(--light);
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge-approved {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
-  background: var(--white);
-  color: var(--primary);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.action-btn:hover {
-  background: rgba(30, 145, 150, 0.08);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal.active {
-  display: flex;
-}
-
-.modal-content {
-  background: var(--white);
-  border-radius: 12px;
-  padding: 2rem;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-header h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--secondary);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.close-btn:hover {
-  color: var(--secondary);
-}
-
-.info-table {
-  width: 100%;
-  margin: 1.5rem 0;
-}
-
-.info-table tr {
-  border-bottom: 1px solid var(--border);
-}
-
-.info-table td {
-  padding: 0.75rem 0;
-}
-
-.info-table td:first-child {
-  font-weight: 600;
-  color: var(--secondary);
-  width: 140px;
-}
-
-.info-table td:last-child {
-  color: var(--text-dark);
-}
-
-.receipt-image {
-  max-width: 100%;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  margin: 1rem 0;
-}
-
-.success-message {
-  background: #dcfce7;
-  color: #166534;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  display: none;
-}
-
-.success-message.active {
-  display: block;
-}
-
-.file-name {
-  margin-top: 0.75rem;
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 14px;
-}
-</style>
-
-<div class="wrapper">
-  <header>
-    <nav>
-      <div class="logo">Fly Light Logistics</div>
-      <ul class="nav-links">
-        <li><a href="#" class="nav-link active" onclick="switchPage('home'); return false;">الرئيسية</a></li>
-        <li><a href="#" class="nav-link" onclick="switchPage('contribute'); return false;">المساهمة</a></li>
-        <li><a href="#" class="nav-link" onclick="switchPage('dashboard'); return false;">الإدارة</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main>
-    <div id="home" class="page active">
-      <div class="hero">
-        <h1>Fly Light Logistics Solutions</h1>
-        <p>حلول لوجستية متكاملة وموثوقة لنقل البضائع والشحنات بكفاءة واحترافية عالية</p>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title">عن الشركة</h2>
-        <div class="card" style="max-width: 100%; border: none; background: linear-gradient(135deg, rgba(30, 145, 150, 0.06) 0%, rgba(13, 108, 112, 0.06) 100%); padding: 2.5rem;">
-          <p style="font-size: 16px; line-height: 1.8; color: var(--text-dark);">
-            Fly Light Logistics Solutions هي شركة رائدة في مجال الخدمات اللوجستية، نقدم حلولاً متكاملة للنقل والشحن والتخزين والتوزيع. نلتزم بأعلى معايير الجودة والأمان لضمان وصول شحناتكم بسلامة وفي الوقت المحدد. فريقنا المحترف متاح على مدار الساعة لخدمتكم.
-          </p>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fly Light Logistics Solutions - حلول لوجستية متكاملة</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <nav>
+        <div class="logo">
+          <span class="logo-icon">✈</span>
+          <span class="logo-text">Fly Light Logistics</span>
         </div>
-      </div>
+        <ul class="nav-links">
+          <li><a href="#" class="nav-link active" data-page="home">الرئيسية</a></li>
+          <li><a href="#" class="nav-link" data-page="contribute">المساهمة</a></li>
+          <li><a href="#" class="nav-link" data-page="dashboard">الإدارة</a></li>
+        </ul>
+      </nav>
+    </header>
 
-      <div class="section">
-        <h2 class="section-title">خدماتنا الرئيسية</h2>
-        <div class="grid">
-          <div class="card">
-            <div class="card-icon">📦</div>
-            <h3>النقل والشحن</h3>
-            <p>خدمات نقل وشحن سريعة وآمنة مع تتبع لحظي للشحنات محلياً ودولياً</p>
-          </div>
-          <div class="card">
-            <div class="card-icon">🏢</div>
-            <h3>التخزين والمستودعات</h3>
-            <p>مستودعات حديثة ومجهزة بأنظمة أمان متطورة لحفظ بضائعكم بأمان تام</p>
-          </div>
-          <div class="card">
-            <div class="card-icon">🔍</div>
-            <h3>التتبع اللحظي</h3>
-            <p>نظام تتبع ذكي ومتطور يتيح لك معرفة موقع شحنتك بدقة في أي لحظة</p>
-          </div>
-          <div class="card">
-            <div class="card-icon">💼</div>
-            <h3>الاستشارات اللوجستية</h3>
-            <p>استشارات احترافية لتحسين سلسلة الإمداد وتطوير عمليات التوزيع</p>
-          </div>
-          <div class="card">
-            <div class="card-icon">🚀</div>
-            <h3>حلول مرنة</h3>
-            <p>خدمات قابلة للتوسع تتكيف مع احتياجات نشاطك التجاري المتنامي</p>
-          </div>
-          <div class="card">
-            <div class="card-icon">👥</div>
-            <h3>دعم على مدار الساعة</h3>
-            <p>فريق دعم فني محترف متاح 24/7 للرد على استفساراتكم ومساعدتكم</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title">رؤيتنا وقيمنا</h2>
-        <div class="grid">
-          <div class="card">
-            <h3>الالتزام والمصداقية</h3>
-            <p>نلتزم بتقديم خدمات عالية الجودة ونحافظ على ثقة عملائنا في كل مرحلة</p>
-          </div>
-          <div class="card">
-            <h3>الابتكار والتطوير</h3>
-            <p>نستثمر في أحدث التقنيات اللوجستية لتقديم خدمات مبتكرة ومتطورة</p>
-          </div>
-          <div class="card">
-            <h3>الثقة والشفافية</h3>
-            <p>نبني شراكات طويلة الأمد مع عملائنا على أساس الثقة والشفافية الكاملة</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="contribute" class="page">
-      <div class="hero">
-        <h1>انضم كشريك استثماري</h1>
-        <p>ساهم في نمو Fly Light Logistics واستثمر في مستقبل قطاع النقل واللوجستيات</p>
-      </div>
-
-      <div class="form-container">
-        <div class="success-message" id="successMsg">✓ تم تقديم المساهمة بنجاح</div>
-
-        <div class="iban-box">
-          <p style="font-size: 15px; margin-bottom: 0.5rem;">رقم الحساب البنكي (IBAN)</p>
-          <div class="iban-code">SA03 8000 0000 6080 1016 7519</div>
-        </div>
-
-        <form id="contributeForm">
-          <div class="form-group">
-            <label>الاسم الكامل</label>
-            <input type="text" id="name" required placeholder="محمد علي">
-          </div>
-
-          <div class="form-group">
-            <label>رقم الهاتف</label>
-            <input type="tel" id="phone" required placeholder="+966501234567">
-          </div>
-
-          <div class="form-group">
-            <label>البريد الإلكتروني</label>
-            <input type="email" id="email" required placeholder="example@email.com">
-          </div>
-
-          <div class="form-group">
-            <label>مبلغ المساهمة (ريال سعودي)</label>
-            <input type="number" id="amount" required min="1" placeholder="10000">
-          </div>
-
-          <div class="form-group">
-            <label>إيصال التحويل البنكي</label>
-            <div class="upload-box" onclick="document.getElementById('receiptFile').click()">
-              <div class="upload-box-icon">📤</div>
-              <p style="font-weight: 600; color: var(--secondary);">اختر ملف الإيصال</p>
-              <p style="font-size: 13px; color: var(--text-muted); margin-top: 0.5rem;">PNG, JPG أو PDF</p>
+    <main>
+      <!-- الصفحة الرئيسية -->
+      <div id="home" class="page active">
+        <section class="hero-section">
+          <div class="hero-content">
+            <h1 class="hero-title">Fly Light Logistics Solutions</h1>
+            <p class="hero-subtitle">حلول لوجستية متكاملة وموثوقة لنقل البضائع والشحنات بكفاءة واحترافية عالية</p>
+            <div class="hero-buttons">
+              <button class="btn btn-primary" data-page="contribute">ابدأ المساهمة</button>
+              <button class="btn btn-outline">تعرف علينا</button>
             </div>
-            <input type="file" id="receiptFile" class="file-input" accept="image/*,application/pdf">
-            <div class="file-name" id="fileName"></div>
           </div>
+        </section>
 
-          <div class="form-group">
-            <label>ملاحظات (اختياري)</label>
-            <textarea id="notes" rows="4" placeholder="أضف أي ملاحظات إضافية..."></textarea>
+        <section class="about-section">
+          <div class="container">
+            <h2 class="section-title">عن الشركة</h2>
+            <div class="about-card">
+              <p class="about-text">
+                Fly Light Logistics Solutions هي شركة رائدة في مجال الخدمات اللوجستية، نقدم حلولاً متكاملة للنقل والشحن والتخزين والتوزيع. نلتزم بأعلى معايير الجودة والأمان لضمان وصول شحناتكم بسلامة وفي الوقت المحدد. فريقنا المحترف متاح على مدار الساعة لخدمتكم.
+              </p>
+            </div>
           </div>
+        </section>
 
-          <button type="submit" class="button">تقديم المساهمة</button>
-        </form>
+        <section class="services-section">
+          <div class="container">
+            <h2 class="section-title">خدماتنا الرئيسية</h2>
+            <div class="services-grid">
+              <div class="service-card">
+                <div class="service-icon">📦</div>
+                <h3>النقل والشحن</h3>
+                <p>خدمات نقل وشحن سريعة وآمنة مع تتبع لحظي للشحنات محلياً ودولياً</p>
+              </div>
+              <div class="service-card">
+                <div class="service-icon">🏢</div>
+                <h3>التخزين والمستودعات</h3>
+                <p>مستودعات حديثة ومجهزة بأنظمة أمان متطورة لحفظ بضائعكم بأمان تام</p>
+              </div>
+              <div class="service-card">
+                <div class="service-icon">🔍</div>
+                <h3>التتبع اللحظي</h3>
+                <p>نظام تتبع ذكي ومتطور يتيح لك معرفة موقع شحنتك بدقة في أي لحظة</p>
+              </div>
+              <div class="service-card">
+                <div class="service-icon">💼</div>
+                <h3>الاستشارات اللوجستية</h3>
+                <p>استشارات احترافية لتحسين سلسلة الإمداد وتطوير عمليات التوزيع</p>
+              </div>
+              <div class="service-card">
+                <div class="service-icon">🚀</div>
+                <h3>حلول مرنة</h3>
+                <p>خدمات قابلة للتوسع تتكيف مع احتياجات نشاطك التجاري المتنامي</p>
+              </div>
+              <div class="service-card">
+                <div class="service-icon">👥</div>
+                <h3>دعم على مدار الساعة</h3>
+                <p>فريق دعم فني محترف متاح 24/7 للرد على استفساراتكم ومساعدتكم</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="values-section">
+          <div class="container">
+            <h2 class="section-title">رؤيتنا وقيمنا</h2>
+            <div class="values-grid">
+              <div class="value-card">
+                <h3>الالتزام والمصداقية</h3>
+                <p>نلتزم بتقديم خدمات عالية الجودة ونحافظ على ثقة عملائنا في كل مرحلة</p>
+              </div>
+              <div class="value-card">
+                <h3>الابتكار والتطوير</h3>
+                <p>نستثمر في أحدث التقنيات اللوجستية لتقديم خدمات مبتكرة ومتطورة</p>
+              </div>
+              <div class="value-card">
+                <h3>الثقة والشفافية</h3>
+                <p>نبني شراكات طويلة الأمد مع عملائنا على أساس الثقة والشفافية الكاملة</p>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
 
-    <div id="dashboard" class="page">
-      <div class="hero">
-        <h1>لوحة التحكم المالية</h1>
-        <p>إدارة ومراجعة المساهمات والإيصالات المالية</p>
+      <!-- صفحة المساهمة -->
+      <div id="contribute" class="page">
+        <section class="hero-section hero-small">
+          <div class="hero-content">
+            <h1 class="hero-title">انضم كشريك استثماري</h1>
+            <p class="hero-subtitle">ساهم في نمو Fly Light Logistics واستثمر في مستقبل قطاع النقل واللوجستيات</p>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="container-small">
+            <div class="form-card">
+              <div class="success-message" id="successMsg">
+                <span class="success-icon">✓</span>
+                <span>تم تقديم المساهمة بنجاح</span>
+              </div>
+
+              <div class="iban-card">
+                <p class="iban-label">رقم الحساب البنكي (IBAN)</p>
+                <div class="iban-number">SA03 8000 0000 6080 1016 7519</div>
+                <button class="btn-copy" onclick="copyIBAN()">نسخ</button>
+              </div>
+
+              <form id="contributeForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="name" required placeholder="محمد علي">
+                  </div>
+                  <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="phone" required placeholder="+966501234567">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>البريد الإلكتروني</label>
+                  <input type="email" id="email" required placeholder="example@email.com">
+                </div>
+
+                <div class="form-group">
+                  <label>مبلغ المساهمة (ريال سعودي)</label>
+                  <input type="number" id="amount" required min="1" placeholder="10000">
+                </div>
+
+                <div class="form-group">
+                  <label>إيصال التحويل البنكي</label>
+                  <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <p class="upload-title">اسحب الملف هنا أو انقر للاختيار</p>
+                    <p class="upload-subtitle">PNG, JPG أو PDF (الحد الأقصى 5MB)</p>
+                  </div>
+                  <input type="file" id="receiptFile" accept="image/*,application/pdf" hidden>
+                  <div class="file-preview" id="filePreview"></div>
+                </div>
+
+                <div class="form-group">
+                  <label>ملاحظات (اختياري)</label>
+                  <textarea id="notes" rows="4" placeholder="أضف أي ملاحظات إضافية..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">تقديم المساهمة</button>
+              </form>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="totalCount">0</div>
-          <div class="stat-label">إجمالي المساهمات</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="totalSum">0</div>
-          <div class="stat-label">المبلغ الكلي (ريال)</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="pendingCount">0</div>
-          <div class="stat-label">قيد المراجعة</div>
-        </div>
+      <!-- صفحة الإدارة -->
+      <div id="dashboard" class="page">
+        <section class="hero-section hero-small">
+          <div class="hero-content">
+            <h1 class="hero-title">لوحة التحكم المالية</h1>
+            <p class="hero-subtitle">إدارة ومراجعة المساهمات والإيصالات المالية</p>
+          </div>
+        </section>
+
+        <section class="dashboard-section">
+          <div class="container">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                  <div class="stat-value" id="totalCount">0</div>
+                  <div class="stat-label">إجمالي المساهمات</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                  <div class="stat-value" id="totalSum">0</div>
+                  <div class="stat-label">المبلغ الكلي (ريال)</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                  <div class="stat-value" id="pendingCount">0</div>
+                  <div class="stat-label">قيد المراجعة</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-card">
+              <div class="table-header">
+                <h3>جميع المساهمات</h3>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>الاسم</th>
+                      <th>الهاتف</th>
+                      <th>البريد</th>
+                      <th>المبلغ</th>
+                      <th>التاريخ</th>
+                      <th>الحالة</th>
+                      <th>الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tableBody">
+                    <tr>
+                      <td colspan="7" class="empty-state">لا توجد مساهمات</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
+    </main>
 
-
-<div id="detailsModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>تفاصيل المساهمة</h2>
-      <button class="close-btn" onclick="closeModal()">&times;</button>
-    </div>
-    <div id="modalBody"></div>
-    <button class="button" style="margin-top: 1.5rem;" onclick="downloadPDF()">تحميل PDF</button>
+    <footer>
+      <div class="container">
+        <p>&copy; 2024 Fly Light Logistics Solutions. جميع الحقوق محفوظة.</p>
+      </div>
+    </footer>
   </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-<script>
-let contributions = JSON.parse(localStorage.getItem('contributions')) || [];
-let selectedContribution = null;
-
-function switchPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  document.getElementById(page).classList.add('active');
-  event.target.classList.add('active');
-  if (page === 'dashboard') updateDashboard();
-}
-
-document.getElementById('receiptFile').addEventListener('change', function() {
-  if (this.files.length > 0) {
-    document.getElementById('fileName').textContent = '✓ ' + this.files[0].name;
-  }
-});
-
-document.getElementById('contributeForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const file = document.getElementById('receiptFile').files[0];
-  if (!file) {
-    alert('يرجى اختيار ملف الإيصال');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const contribution = {
-      id: Date.now(),
-      name: document.getElementById('name').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('email').value,
-      amount: parseFloat(document.getElementById('amount').value),
-      receipt: e.target.result,
-      notes: document.getElementById('notes').value,
-      date: new Date().toLocaleDateString('ar-SA'),
-      status: 'قيد المراجعة'
-    };
-    contributions.push(contribution);
-    localStorage.setItem('contributions', JSON.stringify(contributions));
-    document.getElementById('successMsg').classList.add('active');
-    document.getElementById('contributeForm').reset();
-    document.getElementById('fileName').textContent = '';
-    setTimeout(() => document.getElementById('successMsg').classList.remove('active'), 3000);
-  };
-  reader.readAsDataURL(file);
-});
-
-function updateDashboard() {
-  const total = contributions.reduce((s, c) => s + c.amount, 0);
-  const pending = contributions.filter(c => c.status === 'قيد المراجعة').length;
-  
-  document.getElementById('totalCount').textContent = contributions.length;
-  document.getElementById('totalSum').textContent = total.toLocaleString('ar-SA');
-  document.getElementById('pendingCount').textContent = pending;
-
-  const tbody = document.getElementById('tableBody');
-  if (contributions.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">لا توجد مساهمات</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = contributions.map(c => `
-    <tr>
-      <td>${c.name}</td>
-      <td>${c.phone}</td>
-      <td>${c.email}</td>
-      <td>${c.amount.toLocaleString('ar-SA')} ر.س</td>
-      <td>${c.date}</td>
-      <td><span class="badge badge-pending">${c.status}</span></td>
-      <td>
-        <div class="action-buttons">
-          <button class="action-btn" onclick="viewDetails(${c.id})">عرض</button>
-          <button class="action-btn" onclick="downloadReceiptPDF(${c.id})">PDF</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function viewDetails(id) {
-  selectedContribution = contributions.find(c => c.id === id);
-  const modal = document.getElementById('detailsModal');
-  document.getElementById('modalBody').innerHTML = `
-    <table class="info-table">
-      <tr><td>الاسم</td><td>${selectedContribution.name}</td></tr>
-      <tr><td>الهاتف</td><td>${selectedContribution.phone}</td></tr>
-      <tr><td>البريد</td><td>${selectedContribution.email}</td></tr>
-      <tr><td>المبلغ</td><td>${selectedContribution.amount.toLocaleString('ar-SA')} ريال</td></tr>
-      <tr><td>التاريخ</td><td>${selectedContribution.date}</td></tr>
-      <tr><td>الحالة</td><td>${selectedContribution.status}</td></tr>
-      <tr><td>الملاحظات</td><td>${selectedContribution.notes || 'لا توجد'}</td></tr>
-    </table>
-    <div style="margin: 1.5rem 0;">
-      <p style="font-weight: 600; margin-bottom: 0.75rem; color: var(--primary);">الإيصال:</p>
-      <img src="${selectedContribution.receipt}" class="receipt-image">
+  <!-- Modal -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>تفاصيل المساهمة</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="downloadPDF()">تحميل PDF</button>
+        <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
+      </div>
     </div>
-  `;
-  modal.classList.add('active');
-}
+  </div>
 
-function closeModal() {
-  document.getElementById('detailsModal').classList.remove('active');
-}
-
-function downloadReceiptPDF(id) {
-  const c = contributions.find(x => x.id === id);
-  const element = document.createElement('div');
-  element.style.padding = '40px';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.direction = 'rtl';
-  element.innerHTML = `
-    <h1 style="text-align: center; color: #0A1C33; margin-bottom: 30px;">شهادة مساهمة - Fly Light Logistics</h1>
-    <hr>
-    <p><strong>الاسم:</strong> ${c.name}</p>
-    <p><strong>الهاتف:</strong> ${c.phone}</p>
-    <p><strong>البريد:</strong> ${c.email}</p>
-    <p><strong>المبلغ:</strong> ${c.amount.toLocaleString('ar-SA')} ريال سعودي</p>
-    <p><strong>التاريخ:</strong> ${c.date}</p>
-    <p><strong>الحساب البنكي:</strong> SA03 8000 0000 6080 1016 7519</p>
-    <hr>
-    <p style="text-align: center; color: #999; font-size: 12px;">شكراً لمساهمتك</p>
-  `;
-  html2pdf().set({margin: 10, filename: c.name + '_مساهمة.pdf'}).from(element).save();
-}
-
-function downloadPDF() {
-  if (selectedContribution) downloadReceiptPDF(selectedContribution.id);
-}
-
-window.onclick = function(e) {
-  const modal = document.getElementById('detailsModal');
-  if (e.target === modal) closeModal();
-}
-</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
