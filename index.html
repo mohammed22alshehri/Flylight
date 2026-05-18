@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fly Light Logistics Solutions - حلول لوجستية متكاملة</title>
+  <title>Fly Light Logistics Solutions</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="wrapper">
+
+    <!-- ===== HEADER ===== -->
     <header>
       <nav>
         <div class="logo">
@@ -18,119 +22,225 @@
         </button>
         <ul class="nav-links" id="navLinks">
           <li><a href="#" class="nav-link active" data-page="home">الرئيسية</a></li>
-          <li><a href="#" class="nav-link" data-page="contribute">للمساهمة</a></li>
-          <li><a href="#" class="nav-link" data-page="dashboard">المساهمات</a></li>
+          <li><a href="#" class="nav-link" data-page="contribute">المساهمة</a></li>
+          <li><a href="#" class="nav-link" data-page="dashboard">الإدارة</a></li>
         </ul>
       </nav>
     </header>
 
     <main>
+
+      <!-- ===== HOME ===== -->
       <div id="home" class="page active">
+
         <section class="hero-section">
           <div class="hero-image-wrapper">
             <img src="good_pic.jpg" alt="Fly Light Logistics" class="hero-bg-img">
             <div class="hero-overlay"></div>
           </div>
           <div class="hero-content">
+            <div class="hero-badge">🚀 شركة لوجستية ناشئة</div>
             <h1 class="hero-title">Fly Light Logistics Solutions</h1>
-            <p class="hero-subtitle">نبتكر الحلول اللوجستية لنقود مستقبل النقل الذكي والمستدام.</p>
+            <p class="hero-subtitle">حلول لوجستية متكاملة وموثوقة لنقل البضائع والشحنات بكفاءة واحترافية عالية</p>
             <div class="hero-buttons">
-              <button class="btn btn-primary" onclick="switchPage('contribute')">ساهم معنا الآن</button>
+              <button class="btn btn-primary" data-page="contribute">ابدأ المساهمة</button>
+              <button class="btn btn-glass">تعرف علينا</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- About -->
+        <section class="about-section">
+          <div class="container">
+            <h2 class="section-title">عن الشركة</h2>
+            <div class="about-card">
+              <div class="about-logo-wrap">
+                <img src="logo-removebg-preview.png" alt="FlyLight" class="about-logo">
+              </div>
+              <p class="about-text">
+                هي شركة ناشئة واعدة في مجال الخدمات اللوجستية المتكاملة، تم بناؤها وتطويرها بالكامل بأيدي مجموعة من الطلاب الشغوفين والمتميزين. نحن في بداية طريقنا، ونؤمن بأن دعمكم ومساهمتكم معنا هي الركيزة الأساسية لنخطو أولى خطواتنا بثقة نحو رحلة نجاحنا وتميزنا في تقديم حلول النقل والشحن والتوزيع. شاركونا النجاح، ودعونا نكبر معاً.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Services -->
+        <section class="services-section">
+          <div class="container">
+            <h2 class="section-title">خدماتنا الرئيسية</h2>
+            <div class="services-grid">
+              <div class="service-card"><div class="service-icon">📦</div><h3>النقل والشحن</h3><p>خدمات نقل وشحن سريعة وآمنة مع تتبع لحظي للشحنات محلياً ودولياً</p></div>
+              <div class="service-card"><div class="service-icon">🏢</div><h3>التخزين والمستودعات</h3><p>مستودعات حديثة ومجهزة بأنظمة أمان متطورة لحفظ بضائعكم بأمان تام</p></div>
+              <div class="service-card"><div class="service-icon">🔍</div><h3>التتبع اللحظي</h3><p>نظام تتبع ذكي ومتطور يتيح لك معرفة موقع شحنتك بدقة في أي لحظة</p></div>
+              <div class="service-card"><div class="service-icon">💼</div><h3>الاستشارات اللوجستية</h3><p>استشارات احترافية لتحسين سلسلة الإمداد وتطوير عمليات التوزيع</p></div>
+              <div class="service-card"><div class="service-icon">🚀</div><h3>حلول مرنة</h3><p>خدمات قابلة للتوسع تتكيف مع احتياجات نشاطك التجاري المتنامي</p></div>
+              <div class="service-card"><div class="service-icon">👥</div><h3>دعم على مدار الساعة</h3><p>فريق دعم فني محترف متاح 24/7 للرد على استفساراتكم ومساعدتكم</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Values -->
+        <section class="values-section">
+          <div class="container">
+            <h2 class="section-title">رؤيتنا وقيمنا</h2>
+            <div class="values-grid">
+              <div class="value-card"><div class="value-icon">🤝</div><h3>الالتزام والمصداقية</h3><p>نلتزم بتقديم خدمات عالية الجودة ونحافظ على ثقة عملائنا في كل مرحلة</p></div>
+              <div class="value-card"><div class="value-icon">💡</div><h3>الابتكار والتطوير</h3><p>نستثمر في أحدث التقنيات اللوجستية لتقديم خدمات مبتكرة ومتطورة</p></div>
+              <div class="value-card"><div class="value-icon">🔒</div><h3>الثقة والشفافية</h3><p>نبني شراكات طويلة الأمد مع عملائنا على أساس الثقة والشفافية الكاملة</p></div>
             </div>
           </div>
         </section>
       </div>
 
+      <!-- ===== CONTRIBUTE ===== -->
       <div id="contribute" class="page">
-        <section class="section-padding">
-          <div class="container-small">
-            <h2 class="section-title">تقديم مساهمة جديدة</h2>
-            
-            <div class="iban-card">
-              <h3>معلومات الحساب البنكي</h3>
-              <p>يرجى تحويل مبلغ المساهمة (مضاعفات 50 ريال) إلى الحساب التالي ثم ارفاق الإيصال:</p>
-              <div class="iban-box">
-                <span class="iban-number">SA0880000868608016214271</span>
-                <button class="btn-copy" onclick="copyIBAN()">نسخ الحساب</button>
-              </div>
-            </div>
+        <section class="hero-section hero-small">
+          <div class="hero-content">
+            <h1 class="hero-title">انضم كشريك استثماري</h1>
+            <p class="hero-subtitle">ساهم في نمو Fly Light Logistics واستثمر في مستقبل قطاع النقل واللوجستيات</p>
+          </div>
+        </section>
 
+        <section class="form-section">
+          <div class="container-small">
             <div class="form-card">
-              <form id="contributeForm">
-                <div class="form-group">
-                  <label for="name">الاسم الثلاثي</label>
-                  <input type="text" id="name" required placeholder="أدخل اسمك الكامل">
+
+              <div class="success-message" id="successMsg">
+                <span class="success-icon">✓</span>
+                <div>
+                  <strong>تم تقديم مساهمتك بنجاح!</strong>
+                  <p style="font-size:13px;margin-top:4px;opacity:0.85">سيتم مراجعتها من قِبل الإدارة وإشعارك بالنتيجة</p>
                 </div>
+              </div>
+
+              <!-- IBAN -->
+              <div class="iban-card">
+                <div class="iban-top">
+                  <div>
+                    <p class="iban-label">رقم الحساب البنكي (IBAN)</p>
+                    <p class="iban-bank">🏦 بنك الراجحي &nbsp;|&nbsp; محمد عبدالله عيسى العلي</p>
+                  </div>
+                  <button class="btn-copy" onclick="copyIBAN()">نسخ</button>
+                </div>
+                <div class="iban-number">SA08 8000 0868 6080 1621 4271</div>
+              </div>
+
+              <form id="contributeForm">
                 <div class="form-row">
                   <div class="form-group">
-                    <label for="phone">رقم الجوال</label>
-                    <input type="tel" id="phone" required placeholder="05xxxxxxxx">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="name" required placeholder="محمد علي">
                   </div>
                   <div class="form-group">
-                    <label for="email">البريد الإلكتروني</label>
-                    <input type="email" id="email" required placeholder="name@example.com">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="phone" required placeholder="+966501234567">
                   </div>
                 </div>
+
                 <div class="form-group">
-                  <label for="amount">مبلغ المساهمة (ريال سعودي)</label>
-                  <input type="number" id="amount" required min="50" step="50" placeholder="مثال: 50، 100، 150...">
+                  <label>البريد الإلكتروني</label>
+                  <input type="email" id="email" required placeholder="example@email.com">
                 </div>
+
                 <div class="form-group">
-                  <label>إيصال التحويل</label>
+                  <label>مبلغ المساهمة (ريال سعودي)</label>
+                  <input type="number" id="amount" required min="50" step="50" placeholder="500">
+                  <span class="field-hint">يجب أن يكون المبلغ من مضاعفات 50 — كل 50 ريال = سهم واحد</span>
+                </div>
+
+                <div class="form-group">
+                  <label>إيصال التحويل البنكي</label>
                   <div class="upload-area" id="uploadArea">
-                    <p>اضغط هنا لرفع صورة الإيصال</p>
-                    <input type="file" id="receiptFile" accept="image/*" style="display:none;" required>
-                    <div id="filePreview" class="file-preview"></div>
+                    <div class="upload-icon">📤</div>
+                    <p class="upload-title">اسحب الملف هنا أو انقر للاختيار</p>
+                    <p class="upload-subtitle">PNG, JPG أو PDF — الحد الأقصى 5MB</p>
                   </div>
+                  <input type="file" id="receiptFile" accept="image/*,application/pdf" hidden>
+                  <div class="file-preview" id="filePreview"></div>
                 </div>
+
                 <div class="form-group">
-                  <label for="notes">ملاحظات إضافية (اختياري)</label>
-                  <textarea id="notes" rows="3" placeholder="أي تفاصيل إضافية تود ذكرها"></textarea>
+                  <label>ملاحظات <span style="color:#9CA3AF;font-weight:400">(اختياري)</span></label>
+                  <textarea id="notes" rows="3" placeholder="أضف أي ملاحظات إضافية..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">تقديم المساهمة</button>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  <span>تقديم المساهمة</span>
+                </button>
               </form>
-              <div id="successMsg" class="success-message">تم إرسال مساهمتك بنجاح وهي قيد المراجعة الآن!</div>
             </div>
           </div>
         </section>
       </div>
 
+      <!-- ===== DASHBOARD ===== -->
       <div id="dashboard" class="page">
-        <section class="section-padding">
-          <div class="container">
-            <div id="adminLogin" class="login-card">
-              <h3>تسجيل دخول الإدارة</h3>
-              <input type="password" id="adminPassword" placeholder="أدخل كلمة مرور الإدارة">
-              <button class="btn btn-primary" onclick="adminLogin()">دخول</button>
-              <p id="loginError" class="error-text" style="display:none;">كلمة المرور غير صحيحة!</p>
-            </div>
 
-            <div id="adminContent" style="display:none;">
-              <div class="dashboard-header">
-                <h2>لوحة التحكم بالمساهمات</h2>
-                <button class="btn btn-outline" onclick="adminLogout()">تسجيل الخروج</button>
-              </div>
+        <!-- Login Screen -->
+        <div id="adminLogin" class="admin-login-screen">
+          <div class="login-card">
+            <div class="login-icon">🔐</div>
+            <h2>لوحة تحكم الإدارة</h2>
+            <p>أدخل كلمة المرور للوصول</p>
+            <div class="form-group">
+              <input type="password" id="adminPassword" placeholder="••••••••" class="login-input">
+            </div>
+            <div id="loginError" class="login-error">⚠ كلمة المرور غير صحيحة</div>
+            <button class="btn btn-primary btn-block" onclick="adminLogin()">دخول</button>
+          </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="adminContent" style="display:none">
+          <section class="hero-section hero-small">
+            <div class="hero-content">
+              <h1 class="hero-title">لوحة التحكم المالية</h1>
+              <p class="hero-subtitle">إدارة ومراجعة المساهمات والإيصالات المالية</p>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="container">
 
               <div class="stats-grid">
-                <div class="stat-card">
-                  <p>إجمالي الطلبات</p>
-                  <h3 id="totalCount">0</h3>
+                <div class="stat-card stat-total">
+                  <div class="stat-icon">📊</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">إجمالي الطلبات</div>
+                  </div>
                 </div>
-                <div class="stat-card approved">
-                  <p>المبالغ المقبولة (ر.س)</p>
-                  <h3 id="totalSum">0</h3>
+                <div class="stat-card stat-money">
+                  <div class="stat-icon">💰</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="totalSum">0</div>
+                    <div class="stat-label">المبلغ المعتمد (ريال)</div>
+                  </div>
                 </div>
-                <div class="stat-card pending">
-                  <p>قيد المراجعة</p>
-                  <h3 id="pendingCount">0</h3>
+                <div class="stat-card stat-pending">
+                  <div class="stat-icon">⏳</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="pendingCount">0</div>
+                    <div class="stat-label">قيد المراجعة</div>
+                  </div>
                 </div>
-                <div class="stat-card approved-count">
-                  <p>المقبولة</p>
-                  <h3 id="approvedCount">0</h3>
+                <div class="stat-card stat-approved">
+                  <div class="stat-icon">✅</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="approvedCount">0</div>
+                    <div class="stat-label">تمت الموافقة</div>
+                  </div>
                 </div>
               </div>
 
               <div class="table-card">
+                <div class="table-header">
+                  <h3>📋 جميع المساهمات</h3>
+                  <div style="display:flex;gap:0.75rem;align-items:center">
+                    <button class="btn-refresh" onclick="loadDashboard()">🔄 تحديث</button>
+                    <button class="btn-logout" onclick="adminLogout()">خروج</button>
+                  </div>
+                </div>
                 <div class="table-wrapper">
                   <table>
                     <thead>
@@ -150,35 +260,61 @@
                   </table>
                 </div>
               </div>
+
             </div>
           </section>
         </div>
       </div>
+
     </main>
 
     <footer>
       <div class="container">
-        <p>&copy; 2024 Fly Light Logistics Solutions. جميع الحقوق محفوظة.</p>
+        <div class="footer-inner">
+          <img src="logo-removebg-preview.png" alt="Fly Light" class="footer-logo">
+          <p>© 2024 Fly Light Logistics Solutions — جميع الحقوق محفوظة</p>
+        </div>
       </div>
     </footer>
   </div>
 
+  <!-- ===== Details Modal ===== -->
   <div id="detailsModal" class="modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
       <div class="modal-header">
         <h2>تفاصيل المساهمة</h2>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body" id="modalBody"></div>
       <div class="modal-footer">
-        <button class="btn btn-primary" onclick="downloadPDF()">تحميل PDF</button>
         <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
       </div>
     </div>
   </div>
 
+  <!-- ===== Booklet Modal ===== -->
+  <div id="bookletModal" class="modal">
+    <div class="modal-overlay" onclick="closeBooklet()"></div>
+    <div class="modal-content modal-booklet">
+      <div class="modal-header">
+        <h2>📋 كتيب الأسهم</h2>
+        <button class="modal-close" onclick="closeBooklet()">×</button>
+      </div>
+      <div class="modal-body" id="bookletBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="printBooklet()">🖨 طباعة / حفظ PDF</button>
+        <button class="btn btn-outline" onclick="closeBooklet()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- html2pdf -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- App -->
+  <script src="supabase.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
