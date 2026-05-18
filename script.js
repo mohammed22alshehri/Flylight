@@ -32,28 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3. تفعيل زر المساهمة الموجود في الهيرو سيكشن (إصلاح المشكلة الخامسة)
+  // 3. تفعيل زر المساهمة الموجود في الهيرو سيكشن (Hero Section)
   const heroContributeBtn = document.querySelector('.hero-buttons .btn-primary');
   if (heroContributeBtn) {
     heroContributeBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      switchPage('contribute'); // ينقلك فوراً لصفحة الاستمارة
+      switchPage('contribute'); 
     });
   }
 
-  // 4. تحسين استجابة شكل زر رفع الملف وإظهار اسم الملف المرفوع للمستخدم
+  // 4. مراقبة زر رفع الملف وإظهار اسم الملف المرفوع في الكونسول
   const fileInput = document.getElementById('receiptFile');
   if (fileInput) {
     fileInput.addEventListener('change', (e) => {
       const fileName = e.target.files[0]?.name || "لم يتم اختيار ملف";
-      // إذا كان لديك عنصر لعرض اسم الملف، سيتم تحديثه هنا
       console.log("الملف المختار حالياً:", fileName);
+      showToast(`تم اختيار الملف: ${fileName}`, 'success');
     });
   }
 
-  // 5. تشغيل النماذج والفلاتر بشكل آمن لا يعطل المتصفح
-  try { setupFilters(); } catch(e) { console.error(e); }
-  try { setupForm(); }    catch(e) { console.error(e); }
+  // 5. تشغيل تشكيل النماذج والفلاتر بشكل آمن
+  try { setupForm(); } catch(e) { console.error("خطأ في تهيئة النموذج:", e); }
 });
 
 // ===== آلية التنقل الفوري المتوافقة مع الموبايل =====
@@ -80,30 +79,34 @@ function checkAdminSession() {
   if(loginForm) loginForm.style.display = ok ? 'none' : 'flex';
   if(dashboardContent) dashboardContent.style.display = ok ? 'block' : 'none';
   
-  if (ok) loadDashboardData();
+  if (ok) loadDashboard();
 }
 
-function handleLogin(e) {
-  if (e) e.preventDefault();
+// دالة تسجيل الدخول المرتبطة بـ الـ HTML (adminLogin)
+function adminLogin() {
   const passInput = document.getElementById('adminPassword');
+  const errorMsg = document.getElementById('loginError');
   if (!passInput) return;
 
   if (passInput.value === ADMIN_PASS) {
+    if (errorMsg) errorMsg.style.display = 'none';
     sessionStorage.setItem('adminLoggedIn', 'true');
     checkAdminSession();
     showToast('تم تسجيل الدخول بنجاح');
   } else {
+    if (errorMsg) errorMsg.style.display = 'block';
     showToast('كلمة المرور غير صحيحة', 'danger');
   }
 }
 
-function handleLogout() {
+// دالة تسجيل الخروج المرتبطة بـ الـ HTML (adminLogout)
+function adminLogout() {
   sessionStorage.removeItem('adminLoggedIn');
   checkAdminSession();
   showToast('تم تسجيل الخروج');
 }
 
-// ===== معالجة الاستمارة ورفع الملفات =====
+// ===== معالجة الاستمارة ورفع الملفات لـ Supabase =====
 function setupForm() {
   const form = document.getElementById('contributeForm');
   if (!form) return;
@@ -111,7 +114,7 @@ function setupForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn?.textContent || 'إرسال';
+    const originalText = submitBtn?.textContent || 'تقديم المساهمة';
     
     try {
       const fileInput = document.getElementById('receiptFile');
@@ -126,12 +129,12 @@ function setupForm() {
         submitBtn.textContent = 'جاري إرسال البيانات...';
       }
 
-      // إعداد كائن البيانات الموجه لـ Supabase
+      // مطابقة دقيقة لمعرفات عناصر الإدخال في الـ HTML
       const contributionData = {
-        name: document.getElementById('fullName').value,
-        phone: document.getElementById('phoneNumber').value,
-        email: document.getElementById('emailAddress').value,
-        amount: parseFloat(document.getElementById('stockAmount').value),
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        amount: parseFloat(document.getElementById('amount').value),
         notes: document.getElementById('notes')?.value || '',
         receipt_url: '',
         receipt_name: file.name
@@ -139,15 +142,23 @@ function setupForm() {
 
       const tempId = 'rec_' + Math.random().toString(36).substr(2, 9);
       
-      // رفع الملف إلى كبسولة التخزين أولاً
+      // رفع الإيصال والحصول على الرابط العام
       const uploadRes = await dbUploadReceipt(file, tempId);
       contributionData.receipt_url = uploadRes.url;
 
-      // حفظ البيانات بالجدول الرئيسي
+      // إدخال السجل في قاعدة البيانات
       await dbInsert(contributionData);
 
       showToast('تم إرسال طلب المساهمة بنجاح، شكراً لك!');
       form.reset();
+      
+      // إظهار رسالة النجاح الثابتة في الصفحة إن وجدت
+      const successMsg = document.getElementById('successMsg');
+      if (successMsg) {
+        successMsg.style.display = 'flex';
+        setTimeout(() => { successMsg.style.display = 'none'; }, 5000);
+      }
+
       switchPage('home');
     } catch (err) {
       console.error(err);
@@ -161,9 +172,9 @@ function setupForm() {
   });
 }
 
-// ===== جلب وعرض بيانات لوحة التحكم =====
-async function loadDashboardData() {
-  const tbody = document.getElementById('dashboardTableBody');
+// ===== جلب وعرض بيانات لوحة التحكم (loadDashboard) =====
+async function loadDashboard() {
+  const tbody = document.getElementById('tableBody');
   if (!tbody) return;
   
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري تحميل البيانات...</td></tr>';
@@ -174,31 +185,32 @@ async function loadDashboardData() {
     updateStats(allContributions);
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">فشل في جلب البيانات، يرجى فحص إعدادات السيرفر</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">فشل في جلب البيانات، يرجى فحص الإعدادات</td></tr>';
   }
 }
 
 function renderTable(list) {
-  const tbody = document.getElementById('dashboardTableBody');
+  const tbody = document.getElementById('tableBody');
   if (!tbody) return;
   
   if (!list || list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">لا توجد مساهمات مسجلة حالياً.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">لا توجد مساهمات مسجلة حالياً.</td></tr>';
     return;
   }
 
   tbody.innerHTML = list.map(item => `
     <tr>
-      <td>${item.id}</td>
       <td><strong>${item.name}</strong></td>
+      <td>${item.phone}</td>
+      <td>${item.email}</td>
       <td>${item.amount} ريال</td>
       <td>${formatDate(item.created_at)}</td>
       <td>${statusBadge(item.status)}</td>
       <td>
-        ${item.receipt ? `<a href="${item.receipt}" target="_blank" class="btn-link">📄 عرض الإيصال</a>` : '—'}
-      </td>
-      <td>
-        <button class="btn btn-outline" style="padding: 4px 10px; font-size:13px;" onclick="openDetails(${item.id})">إدارة</button>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          ${item.receipt ? `<a href="${item.receipt}" target="_blank" class="btn btn-outline" style="padding:4px 8px; font-size:12px; text-decoration:none;">📄 الإيصال</a>` : '—'}
+          <button class="btn btn-primary" style="padding: 4px 8px; font-size:12px;" onclick="openDetails(${item.id})">إدارة</button>
+        </div>
       </td>
     </tr>
   `).join('');
@@ -206,50 +218,26 @@ function renderTable(list) {
 
 function updateStats(list) {
   if(!list) return;
+  
+  // حساب المبالغ المعتمدة
   const totalAmount = list
     .filter(item => item.status === 'approved' || item.status === 'تمت الموافقة')
     .reduce((sum, item) => sum + Number(item.amount), 0);
 
   const totalCount = list.length;
   const pendingCount = list.filter(item => item.status === 'pending' || item.status === 'قيد المراجعة').length;
+  const approvedCount = list.filter(item => item.status === 'approved' || item.status === 'تمت الموافقة').length;
 
-  const statAmount = document.getElementById('statTotalAmount');
-  const statCount = document.getElementById('statTotalCount');
-  const statPending = document.getElementById('statPendingCount');
+  // ربط المعرفات المتطابقة مع HTML المعطى
+  const statCount = document.getElementById('totalCount');
+  const statSum = document.getElementById('totalSum');
+  const statPending = document.getElementById('pendingCount');
+  const statApproved = document.getElementById('approvedCount');
 
-  if (statAmount) statAmount.textContent = totalAmount.toLocaleString() + ' ريال';
   if (statCount) statCount.textContent = totalCount;
+  if (statSum) statSum.textContent = totalAmount.toLocaleString() + ' ريال';
   if (statPending) statPending.textContent = pendingCount;
-}
-
-function setupFilters() {
-  const searchInput = document.getElementById('tableSearch');
-  const filterSelect = document.getElementById('tableFilter');
-
-  if (searchInput) searchInput.addEventListener('input', () => filterAndSearch());
-  if (filterSelect) filterSelect.addEventListener('change', () => filterAndSearch());
-}
-
-function filterAndSearch() {
-  const query = document.getElementById('tableSearch')?.value.toLowerCase() || '';
-  const filterValue = document.getElementById('tableFilter')?.value || 'all';
-
-  let filtered = allContributions.filter(item => {
-    const matchQuery = item.name.toLowerCase().includes(query) || item.phone.includes(query);
-    let matchFilter = true;
-    
-    if (filterValue === 'pending') {
-      matchFilter = (item.status === 'pending' || item.status === 'قيد المراجعة');
-    } else if (filterValue === 'approved') {
-      matchFilter = (item.status === 'approved' || item.status === 'تمت الموافقة');
-    } else if (filterValue === 'rejected') {
-      matchFilter = (item.status === 'rejected' || item.status === 'مرفوض');
-    }
-
-    return matchQuery && matchFilter;
-  });
-
-  renderTable(filtered);
+  if (statApproved) statApproved.textContent = approvedCount;
 }
 
 // ===== المنبثقة الإدارية وتغيير الحالات =====
@@ -263,7 +251,7 @@ function openDetails(id) {
   const receiptLink = selectedContribution.receipt || '#';
 
   modalBody.innerHTML = `
-    <div class="details-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; direction:rtl;">
+    <div class="details-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; direction:rtl; text-align:right;">
       <div><p><strong>اسم المساهم:</strong> ${selectedContribution.name}</p></div>
       <div><p><strong>رقم الهاتف:</strong> ${selectedContribution.phone}</p></div>
       <div><p><strong>البريد الإلكتروني:</strong> ${selectedContribution.email}</p></div>
@@ -275,11 +263,11 @@ function openDetails(id) {
     <hr style="margin:1.5rem 0; border:0; border-top:1px solid var(--border);">
     <div style="text-align:center; margin-bottom:1.5rem;">
       <p style="margin-bottom:0.5rem;"><strong>إيصال المرفق:</strong></p>
-      ${selectedContribution.receipt ? `<a href="${receiptLink}" target="_blank"><img src="${receiptLink}" style="max-width:100%; max-height:250px; border-radius:8px; border:1px solid var(--border);"></a>` : '<p>لا يوجد إيصال مرفق</p>'}
+      ${selectedContribution.receipt ? `<a href="${receiptLink}" target="_blank"><img src="${receiptLink}" style="max-width:100%; max-height:250px; border-radius:8px; border:1px solid #E5E7EB;"></a>` : '<p>لا يوجد إيصال مرفق</p>'}
     </div>
     <div class="status-actions" style="display:flex; gap:0.5rem; justify-content:center;">
       <button class="btn btn-primary" onclick="updateStatusAction('تمت الموافقة')">✅ اعتماد والموافقة</button>
-      <button class="btn btn-danger" style="background:#EF4444;" onclick="updateStatusAction('مرفوض')">❌ رفض الطلب</button>
+      <button class="btn btn-danger" style="background:#EF4444; color:white;" onclick="updateStatusAction('مرفوض')">❌ رفض الطلب</button>
     </div>
   `;
 
@@ -293,7 +281,7 @@ async function updateStatusAction(newStatus) {
     await dbUpdateStatus(selectedContribution.id, newStatus);
     showToast('تم تحديث حالة الطلب بنجاح');
     closeModal();
-    loadDashboardData();
+    loadDashboard();
   } catch (err) {
     console.error(err);
     showToast('فشل في تحديث الحالة بقاعدة البيانات', 'danger');
@@ -303,6 +291,11 @@ async function updateStatusAction(newStatus) {
 function closeModal() {
   document.getElementById('detailsModal')?.classList.remove('active');
   document.body.style.overflow = 'auto';
+}
+
+// ===== دالات المساعدة للـ Booklet المذكورة في HTML =====
+function closeBooklet() {
+  document.getElementById('bookletModal')?.classList.remove('active');
 }
 
 // ===== الحالات والدوال المساعدة للـ Toast والتواريخ =====
@@ -325,13 +318,11 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ar-SA', { year:'numeric', month:'short', day:'numeric' });
 }
 
-// 🛠️ تم حقن خصائص ستايل حمائية مدمجة لضمان ظهور رسالة الخطأ والـ Toast أعلى جميع الطبقات (المشكلة الثانية)
 function showToast(msg, type = 'success') {
   document.querySelector('.toast')?.remove();
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
   
-  // فرض ظهور الرسالة في الأعلى فوق كل شيء بشكل حاسم
   t.style.position = 'fixed';
   t.style.zIndex = '999999'; 
   
