@@ -1,5 +1,5 @@
 // ===== الثوابت =====
-const ADMIN_PASS = 'flylight2024';
+const ADMIN_PASS = 'ADMIN_PASS';
 let selectedContribution = null;
 
 // ===== Hamburger القائمة المتنقلة =====
