@@ -1,80 +1,128 @@
-// ===== البيانات المحلية =====
-let contributions = JSON.parse(localStorage.getItem('contributions')) || [];
+// ===== إعداد Supabase =====
+const SUPABASE_URL = 'SUPABASE_URL';
+const SUPABASE_KEY = 'SUPABASE_KEYا';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const ADMIN_PASS = 'flylight2024';
+let localContributions = []; // تخزين محلي مؤقت للبيانات المسحوبة
 let selectedContribution = null;
+
+// ===== جلب البيانات من Supabase =====
+async function fetchContributions() {
+  const { data, error } = await supabase
+    .from('contributions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching data:', error);
+    return [];
+  }
+  localContributions = data;
+  return data;
+}
+
+// ===== Hamburger Menu =====
+document.addEventListener('DOMContentLoaded', function () {
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', function () {
+      hamburger.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        navLinks.classList.remove('open');
+      });
+    });
+  }
+});
 
 // ===== التنقل بين الصفحات =====
 function switchPage(pageName) {
-  // إخفاء جميع الصفحات
-  document.querySelectorAll('.page').forEach(page => {
-    page.classList.remove('active');
-  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
-  // إزالة الحالة النشطة من جميع الروابط
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.remove('active');
-  });
+  const target = document.getElementById(pageName);
+  if (target) target.classList.add('active');
 
-  // إظهار الصفحة المطلوبة
-  const targetPage = document.getElementById(pageName);
-  if (targetPage) {
-    targetPage.classList.add('active');
-  }
-
-  // تفعيل الرابط المناسب
   const activeLink = document.querySelector(`[data-page="${pageName}"]`);
-  if (activeLink) {
-    activeLink.classList.add('active');
-  }
+  if (activeLink) activeLink.classList.add('active');
 
-  // تحديث لوحة التحكم إذا كانت الصفحة المطلوبة
   if (pageName === 'dashboard') {
-    updateDashboard();
+    checkAdminSession();
   }
 
-  // التمرير للأعلى
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ===== معالجة النقر على الروابط =====
-document.addEventListener('DOMContentLoaded', function() {
-  // روابط التنقل
+// ===== نظام تسجيل دخول الإدارة =====
+async function checkAdminSession() {
+  const loggedIn = sessionStorage.getItem('adminLoggedIn');
+  document.getElementById('adminLogin').style.display = loggedIn ? 'none' : 'flex';
+  document.getElementById('adminContent').style.display = loggedIn ? 'block' : 'none';
+  if (loggedIn) {
+    await fetchContributions();
+    updateDashboard();
+  }
+}
+
+function adminLogin() {
+  const pass = document.getElementById('adminPassword').value;
+  const errorEl = document.getElementById('loginError');
+
+  if (pass === ADMIN_PASS) {
+    sessionStorage.setItem('adminLoggedIn', 'true');
+    document.getElementById('adminPassword').value = '';
+    errorEl.style.display = 'none';
+    checkAdminSession();
+  } else {
+    errorEl.style.display = 'block';
+    document.getElementById('adminPassword').value = '';
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('adminLoggedIn');
+  checkAdminSession();
+}
+
+// ===== إعداد الأحداث الأساسية =====
+document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function(e) {
+    link.addEventListener('click', function (e) {
       e.preventDefault();
-      const pageName = this.getAttribute('data-page');
-      switchPage(pageName);
+      switchPage(this.getAttribute('data-page'));
     });
   });
 
-  // أزرار Hero
   document.querySelectorAll('[data-page]').forEach(btn => {
     if (!btn.classList.contains('nav-link')) {
-      btn.addEventListener('click', function() {
-        const pageName = this.getAttribute('data-page');
-        switchPage(pageName);
+      btn.addEventListener('click', function () {
+        switchPage(this.getAttribute('data-page'));
       });
     }
   });
 
-  // معالجة رفع الملفات
   setupFileUpload();
-
-  // معالجة النموذج
   setupForm();
+  switchPage('home');
 });
 
 // ===== نسخ IBAN =====
 function copyIBAN() {
-  const iban = 'SA03 8000 0000 6080 1016 7519';
+  const iban = 'SA0880000868608016214271';
   navigator.clipboard.writeText(iban).then(() => {
     const btn = document.querySelector('.btn-copy');
-    const originalText = btn.textContent;
+    const orig = btn.textContent;
     btn.textContent = '✓ تم النسخ';
-    btn.style.background = 'rgba(255, 255, 255, 0.4)';
-    
+    btn.style.background = 'rgba(255,255,255,0.4)';
     setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = 'rgba(255, 255, 255, 0.2)';
+      btn.textContent = orig;
+      btn.style.background = 'rgba(255,255,255,0.2)';
     }, 2000);
   });
 }
@@ -84,329 +132,255 @@ function setupFileUpload() {
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('receiptFile');
   const filePreview = document.getElementById('filePreview');
-
   if (!uploadArea || !fileInput) return;
 
-  // النقر على منطقة الرفع
-  uploadArea.addEventListener('click', () => {
-    fileInput.click();
+  uploadArea.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', e => {
+    if (e.target.files.length > 0) showFileName(e.target.files[0]);
   });
 
-  // السحب والإفلات
-  uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = '#0D6C70';
-    uploadArea.style.background = 'rgba(30, 145, 150, 0.12)';
-  });
-
-  uploadArea.addEventListener('dragleave', () => {
-    uploadArea.style.borderColor = '#1E9196';
-    uploadArea.style.background = 'rgba(30, 145, 150, 0.03)';
-  });
-
-  uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = '#1E9196';
-    uploadArea.style.background = 'rgba(30, 145, 150, 0.03)';
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      fileInput.files = files;
-      displayFileName(files[0]);
-    }
-  });
-
-  // تغيير الملف
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      displayFileName(e.target.files[0]);
-    }
-  });
-
-  function displayFileName(file) {
-    filePreview.innerHTML = `
-      <span style="font-size: 24px; margin-left: 0.5rem;">✓</span>
-      <span>${file.name}</span>
-      <span style="margin-right: 0.5rem; color: #6B7280;">(${formatFileSize(file.size)})</span>
-    `;
+  function showFileName(file) {
+    filePreview.innerHTML = `<span style="font-size:20px">✓</span><span>${file.name}</span>`;
     filePreview.classList.add('active');
-  }
-
-  function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 }
 
-// ===== إعداد النموذج =====
+function validateAmount(value) {
+  const num = parseFloat(value);
+  return num > 0 && num % 50 === 0;
+}
+
+// ===== إرسال المساهمة إلى Supabase =====
 function setupForm() {
   const form = document.getElementById('contributeForm');
+  const amountInput = document.getElementById('amount');
   if (!form) return;
 
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    const amount = parseFloat(amountInput.value);
+    if (!validateAmount(amount)) {
+      showToast('المبلغ يجب أن يكون من مضاعفات 50', 'error');
+      return;
+    }
 
     const fileInput = document.getElementById('receiptFile');
     const file = fileInput.files[0];
+    if (!file) { showToast('يرجى اختيار ملف الإيصال', 'error'); return; }
 
-    if (!file) {
-      alert('يرجى اختيار ملف الإيصال');
-      return;
-    }
-
-    // التحقق من حجم الملف (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('حجم الملف يجب أن يكون أقل من 5MB');
-      return;
-    }
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'جاري الإرسال...';
+    submitBtn.disabled = true;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
-      const contribution = {
-        id: Date.now(),
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        email: document.getElementById('email').value,
-        amount: parseFloat(document.getElementById('amount').value),
-        receipt: e.target.result,
-        notes: document.getElementById('notes').value,
-        date: new Date().toLocaleDateString('ar-SA'),
+    reader.onload = async function (ev) {
+      const contributionData = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        amount: amount,
+        receipt: ev.target.result, // لحفظ الإيصال كـ Base64 (يفضل مستقبلاً استخدام Supabase Storage)
+        receipt_name: file.name,
+        notes: document.getElementById('notes').value.trim(),
         status: 'قيد المراجعة'
       };
 
-      contributions.push(contribution);
-      localStorage.setItem('contributions', JSON.stringify(contributions));
+      const { data, error } = await supabase.from('contributions').insert([contributionData]);
 
-      // إظهار رسالة النجاح
-      const successMsg = document.getElementById('successMsg');
-      successMsg.classList.add('active');
-
-      // إعادة تعيين النموذج
-      form.reset();
-      document.getElementById('filePreview').classList.remove('active');
-      document.getElementById('filePreview').innerHTML = '';
-
-      // إخفاء رسالة النجاح بعد 4 ثواني
-      setTimeout(() => {
-        successMsg.classList.remove('active');
-      }, 4000);
-
-      // التمرير للأعلى
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (error) {
+        showToast('حدث خطأ أثناء الإرسال', 'error');
+      } else {
+        document.getElementById('successMsg').classList.add('active');
+        form.reset();
+        document.getElementById('filePreview').classList.remove('active');
+        setTimeout(() => document.getElementById('successMsg').classList.remove('active'), 4000);
+      }
+      
+      submitBtn.textContent = 'تقديم المساهمة';
+      submitBtn.disabled = false;
     };
-
     reader.readAsDataURL(file);
   });
 }
 
-// ===== تحديث لوحة التحكم =====
+// ===== تحديث لوحة التحكم (مع الحساب الصحيح للمبالغ المقبولة فقط) =====
 function updateDashboard() {
-  const total = contributions.reduce((sum, c) => sum + c.amount, 0);
+  const contributions = localContributions;
+  
+  // حساب المبالغ للمساهمات المقبولة فقط لعدم حساب المرفوض
+  const approvedContributions = contributions.filter(c => c.status === 'تمت الموافقة');
+  const totalSum = approvedContributions.reduce((s, c) => s + Number(c.amount), 0);
+  
   const pending = contributions.filter(c => c.status === 'قيد المراجعة').length;
+  const approvedCount = approvedContributions.length;
 
   document.getElementById('totalCount').textContent = contributions.length;
-  document.getElementById('totalSum').textContent = total.toLocaleString('ar-SA');
+  document.getElementById('totalSum').textContent = totalSum.toLocaleString('ar-SA');
   document.getElementById('pendingCount').textContent = pending;
+  document.getElementById('approvedCount').textContent = approvedCount;
 
   const tbody = document.getElementById('tableBody');
-  
   if (contributions.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">لا توجد مساهمات</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">لا توجد مساهمات بعد</td></tr>';
     return;
   }
 
   tbody.innerHTML = contributions.map(c => `
     <tr>
       <td>${c.name}</td>
-      <td>${c.phone}</td>
+      <td dir="ltr">${c.phone}</td>
       <td>${c.email}</td>
       <td><strong>${c.amount.toLocaleString('ar-SA')} ر.س</strong></td>
-      <td>${c.date}</td>
-      <td><span class="badge badge-pending">${c.status}</span></td>
+      <td>${new Date(c.created_at).toLocaleDateString('ar-SA')}</td>
+      <td>${statusBadge(c.status)}</td>
       <td>
         <div class="action-buttons">
           <button class="action-btn" onclick="viewDetails(${c.id})">عرض</button>
-          <button class="action-btn" onclick="downloadReceiptPDF(${c.id})">PDF</button>
+          ${c.status === 'قيد المراجعة' ? `
+            <button class="action-btn btn-approve" onclick="updateStatus(${c.id}, 'تمت الموافقة')">✓ موافقة</button>
+            <button class="action-btn btn-reject" onclick="updateStatus(${c.id}, 'مرفوض')">✗ رفض</button>
+          ` : ''}
+          ${c.status === 'تمت الموافقة' ? `<button class="action-btn" onclick="downloadReceiptPDF(${c.id})">شهادة</button>` : ''}
         </div>
       </td>
     </tr>
   `).join('');
 }
 
-// ===== عرض تفاصيل المساهمة =====
+function statusBadge(status) {
+  const map = {
+    'قيد المراجعة': 'badge-pending',
+    'تمت الموافقة': 'badge-approved',
+    'مرفوض': 'badge-rejected'
+  };
+  return `<span class="badge ${map[status] || 'badge-pending'}">${status}</span>`;
+}
+
+// ===== تحديث حالة المساهمة =====
+async function updateStatus(id, newStatus) {
+  const { error } = await supabase
+    .from('contributions')
+    .update({ status: newStatus })
+    .eq('id', id);
+
+  if (error) {
+    showToast('حدث خطأ أثناء التحديث', 'error');
+    return;
+  }
+
+  showToast(newStatus === 'تمت الموافقة' ? '✓ تمت الموافقة على المساهمة' : '✗ تم رفض المساهمة', newStatus === 'تمت الموافقة' ? 'success' : 'error');
+  await fetchContributions();
+  updateDashboard();
+  
+  // إذا تمت الموافقة، اعرض الشهادة تلقائياً للمدير أو أتح تحميلها
+  if (newStatus === 'تمت الموافقة') {
+      downloadReceiptPDF(id);
+  }
+}
+
 function viewDetails(id) {
-  selectedContribution = contributions.find(c => c.id === id);
+  selectedContribution = localContributions.find(c => c.id === id);
   if (!selectedContribution) return;
+  const c = selectedContribution;
 
-  const modal = document.getElementById('detailsModal');
-  const modalBody = document.getElementById('modalBody');
-
-  modalBody.innerHTML = `
+  document.getElementById('modalBody').innerHTML = `
     <table class="info-table">
-      <tr>
-        <td>الاسم</td>
-        <td>${selectedContribution.name}</td>
-      </tr>
-      <tr>
-        <td>الهاتف</td>
-        <td>${selectedContribution.phone}</td>
-      </tr>
-      <tr>
-        <td>البريد الإلكتروني</td>
-        <td>${selectedContribution.email}</td>
-      </tr>
-      <tr>
-        <td>المبلغ</td>
-        <td><strong>${selectedContribution.amount.toLocaleString('ar-SA')} ريال سعودي</strong></td>
-      </tr>
-      <tr>
-        <td>التاريخ</td>
-        <td>${selectedContribution.date}</td>
-      </tr>
-      <tr>
-        <td>الحالة</td>
-        <td><span class="badge badge-pending">${selectedContribution.status}</span></td>
-      </tr>
-      <tr>
-        <td>الملاحظات</td>
-        <td>${selectedContribution.notes || 'لا توجد ملاحظات'}</td>
-      </tr>
+      <tr><td>الاسم</td><td>${c.name}</td></tr>
+      <tr><td>المبلغ</td><td><strong>${c.amount.toLocaleString('ar-SA')} ريال سعودي</strong></td></tr>
+      <tr><td>الحالة</td><td>${statusBadge(c.status)}</td></tr>
     </table>
-    <div style="margin-top: 2rem;">
-      <p style="font-weight: 700; margin-bottom: 1rem; color: #0A1C33; font-size: 16px;">الإيصال:</p>
-      <img src="${selectedContribution.receipt}" class="receipt-image" alt="إيصال التحويل">
+    <div style="margin-top:1.5rem">
+      <p style="font-weight:700;margin-bottom:0.75rem;color:#0A1C33">الإيصال:</p>
+      ${c.receipt ? `<img src="${c.receipt}" class="receipt-image" alt="إيصال">` : 'لا يوجد إيصال'}
     </div>
+    ${c.status === 'قيد المراجعة' ? `
+    <div style="display:flex;gap:1rem;margin-top:1.5rem">
+      <button class="btn btn-approve-full" onclick="updateStatus(${c.id},'تمت الموافقة');closeModal()">✓ موافقة على المساهمة</button>
+      <button class="btn btn-reject-full" onclick="updateStatus(${c.id},'مرفوض');closeModal()">✗ رفض المساهمة</button>
+    </div>` : ''}
   `;
-
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
+  document.getElementById('detailsModal').classList.add('active');
 }
 
-// ===== إغلاق المودال =====
 function closeModal() {
-  const modal = document.getElementById('detailsModal');
-  modal.classList.remove('active');
-  document.body.style.overflow = 'auto';
+  document.getElementById('detailsModal').classList.remove('active');
 }
 
-// إغلاق المودال عند النقر على الخلفية
-document.addEventListener('DOMContentLoaded', function() {
-  const modal = document.getElementById('detailsModal');
-  const overlay = modal.querySelector('.modal-overlay');
-  
-  if (overlay) {
-    overlay.addEventListener('click', closeModal);
-  }
-});
-
-// إغلاق المودال بزر ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    closeModal();
-  }
-});
-
-// ===== تحميل PDF للإيصال =====
+// ===== توليد كتيب الأسهم (الشهادة) بصيغة PDF ومطابقة للمرفق =====
 function downloadReceiptPDF(id) {
-  const contribution = contributions.find(c => c.id === id);
-  if (!contribution) return;
+  const c = localContributions.find(x => x.id === id);
+  if (!c || c.status !== 'تمت الموافقة') return;
 
-  const element = document.createElement('div');
-  element.style.padding = '40px';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.direction = 'rtl';
-  element.style.background = '#ffffff';
+  const sharesCount = c.amount / 50; // حساب عدد الأسهم
+  const dateFormatted = new Date(c.created_at).toLocaleDateString('ar-SA');
 
-  element.innerHTML = `
-    <div style="text-align: center; margin-bottom: 40px;">
-      <h1 style="color: #0A1C33; font-size: 32px; margin-bottom: 10px;">شهادة مساهمة</h1>
-      <h2 style="color: #1E9196; font-size: 24px; font-weight: normal;">Fly Light Logistics Solutions</h2>
-    </div>
-    
-    <div style="border: 3px solid #1E9196; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr style="border-bottom: 1px solid #E5E7EB;">
-          <td style="padding: 15px 10px; font-weight: bold; color: #0A1C33; width: 40%;">الاسم:</td>
-          <td style="padding: 15px 10px; color: #0A1C33;">${contribution.name}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #E5E7EB;">
-          <td style="padding: 15px 10px; font-weight: bold; color: #0A1C33;">رقم الهاتف:</td>
-          <td style="padding: 15px 10px; color: #0A1C33;">${contribution.phone}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #E5E7EB;">
-          <td style="padding: 15px 10px; font-weight: bold; color: #0A1C33;">البريد الإلكتروني:</td>
-          <td style="padding: 15px 10px; color: #0A1C33;">${contribution.email}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #E5E7EB;">
-          <td style="padding: 15px 10px; font-weight: bold; color: #0A1C33;">المبلغ:</td>
-          <td style="padding: 15px 10px; color: #1E9196; font-size: 20px; font-weight: bold;">${contribution.amount.toLocaleString('ar-SA')} ريال سعودي</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #E5E7EB;">
-          <td style="padding: 15px 10px; font-weight: bold; color: #0A1C33;">التاريخ:</td>
-          <td style="padding: 15px 10px; color: #0A1C33;">${contribution.date}</td>
-        </tr>
-        <tr>
-          <td style="padding: 15px 10px; font-weight: bold; color: #0A1C33;">رقم الحساب البنكي:</td>
-          <td style="padding: 15px 10px; color: #0A1C33; font-family: 'Courier New', monospace; font-weight: bold;">SA03 8000 0000 6080 1016 7519</td>
-        </tr>
-      </table>
+  const el = document.createElement('div');
+  el.style.cssText = 'padding:60px; font-family: "Segoe UI", Arial, sans-serif; direction:rtl; background:#fff; color:#0A1C33; position:relative; min-height: 800px; border: 15px solid #1E9196; border-radius: 10px; background-image: radial-gradient(circle, rgba(30,145,150,0.05) 0%, transparent 100%);';
+  
+  el.innerHTML = `
+    <div style="display:flex; justify-content:space-between; border-bottom:3px solid #1E9196; padding-bottom:20px; margin-bottom:40px;">
+        <div style="text-align:right;">
+            <p style="margin:5px 0; font-size:18px; font-weight:bold; color:#1E9196;">برنامج الشركة [cite: 5]</p>
+            <p style="margin:5px 0;">رقم الشهادة: <strong>${c.id}</strong> [cite: 19]</p>
+            <p style="margin:5px 0;">التاريخ: <strong>${dateFormatted}</strong> [cite: 14]</p>
+        </div>
+        <div style="text-align:left;">
+            <h1 style="color:#0A1C33; font-size:32px; margin:0;">Fly Light Logistics Solutions</h1>
+            <p style="margin:5px 0; font-size:14px; color:#6B7280;">إنجاز السعودية [cite: 3]</p>
+        </div>
     </div>
 
-    <div style="text-align: center; padding: 20px; background: #F8FAFB; border-radius: 8px;">
-      <p style="color: #6B7280; font-size: 14px; margin: 0;">شكراً لمساهمتك في نمو Fly Light Logistics Solutions</p>
-      <p style="color: #6B7280; font-size: 12px; margin-top: 10px;">تم إنشاء هذه الشهادة بتاريخ ${new Date().toLocaleDateString('ar-SA')}</p>
+    <div style="text-align:center; margin-bottom:50px;">
+      <h2 style="font-size:36px; color:#1E9196; text-decoration: underline; margin-bottom:20px;">شهادة الأسهم </h2>
+      <p style="font-size:22px; line-height:2;">
+        تشهد شركة <strong>Fly Light Logistics Solutions</strong> [cite: 21]<br>
+        بأن المساهم: <strong style="color:#1E9196; font-size:26px;">${c.name}</strong> [cite: 20]<br>
+        يملك عدد (<strong style="color:#1E9196; font-size:24px;">${sharesCount}</strong>) سهم من أسهم رأس المال،<br>
+        بقيمة إجمالية تبلغ ( <strong>${c.amount}</strong> ) ريالاً سعودياً لا غير. [cite: 21]
+      </p>
+    </div>
+
+    <div style="margin-bottom: 40px; padding: 20px; background: rgba(30,145,150,0.05); border-radius: 8px;">
+        <h3 style="color:#1E9196; margin-top:0;">معلومات المساهم </h3>
+        <p style="margin:10px 0; font-size:18px;">الاسم: <strong>${c.name}</strong> [cite: 10]</p>
+        <p style="margin:10px 0; font-size:18px;">رقم الهاتف: <strong dir="ltr">${c.phone}</strong> [cite: 11]</p>
+    </div>
+
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <p style="font-size:16px; color:#1E9196; font-weight:bold;">توقيع مدير المالية [cite: 24]</p>
+            <div style="border-bottom: 2px dashed #0A1C33; width: 200px; margin-top: 40px;"></div>
+        </div>
+    </div>
+
+    <div style="position:absolute; bottom: 30px; left: 40px; right: 40px; text-align:center; padding-top:20px; border-top: 1px solid #E5E7EB;">
+      <p style="font-size:12px; color:#6B7280; line-height: 1.6;">
+        يعين المساهم مدير المالية كوكيل له في كافة اجتماعات مجلس الإدارة. [cite: 22]<br>
+        <strong>تنويه وإخلاء مسؤولية:</strong> هذه الشهادة تثبت المساهمة في شركة Fly Light Logistics Solutions. وقد طبعت لأغراض تعليمية وتطويرية ضمن برنامج إنجاز ولا تمثل أي التزام أو ذمم مالية رسمية خارج إطار الاتفاق الداخلي للبرنامج. [cite: 23]
+      </p>
     </div>
   `;
 
-  const options = {
-    margin: 15,
-    filename: `مساهمة_${contribution.name}_${contribution.id}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+  html2pdf().set({
+    margin: 0,
+    filename: `شهادة_أسهم_${c.name}.pdf`,
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: { scale: 3, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(options).from(element).save();
+  }).from(el).save();
 }
 
-// ===== تحميل PDF من المودال =====
-function downloadPDF() {
-  if (selectedContribution) {
-    downloadReceiptPDF(selectedContribution.id);
-  }
-}
+function showToast(msg, type = 'success') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
 
-// ===== تهيئة الصفحة عند التحميل =====
-document.addEventListener('DOMContentLoaded', function() {
-  // التأكد من عرض الصفحة الرئيسية
-  switchPage('home');
-  
-  // إضافة تأثيرات التمرير
-  addScrollEffects();
-});
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
 
-// ===== تأثيرات التمرير =====
-function addScrollEffects() {
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-      }
-    });
-  }, observerOptions);
-
-  // مراقبة العناصر
-  document.querySelectorAll('.service-card, .value-card, .stat-card').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
-  });
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
 }
