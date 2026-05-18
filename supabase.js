@@ -1,31 +1,33 @@
-// ===== Supabase Configuration =====
-// استبدل هذه القيم بقيم مشروعك من supabase.com
-// ===== Supabase Configuration =====
-// يقرأ القيم تلقائياً من بيئة التشغيل دون كتابتها في السورس كود
-const SUPABASE_URL = window.env?.SUPABASE_URL || process.env.SUPABASE_URL || 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'YOUR_ANON_KEY';
+// ===== Supabase Safe Configuration =====
+// الكود يقرأ من البيئة مباشرة ولا يحتوي على أي روابط أو مفاتيح ثابتة
+const getClient = () => {
+  const url = window.env?.SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const key = window.env?.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+  
+  if (!url || !key || url.includes('YOUR_PROJECT_ID')) {
+    throw new Error("تنبيه: مفاتيح الاتصال الآمنة غائبة عن بيئة التشغيل الحالية.");
+  }
+  return supabase.createClient(url, key);
+};
 
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ===== Database Operations =====
 
 async function dbInsert(contribution) {
   try {
+    const db = getClient();
     const { data, error } = await db
       .from('contributions')
-      .insert([
-        {
-          name:         contribution.name,
-          phone:        contribution.phone,
-          email:        contribution.email,
-          amount:       contribution.amount,
-          notes:        contribution.notes,
-          receipt:      contribution.receipt_url, 
-          receipt_name: contribution.receipt_name,
-          status:       'قيد المراجعة',
-          created_at:   new Date().toISOString()
-        }
-      ])
+      .insert([{
+        name:         contribution.name,
+        phone:        contribution.phone,
+        email:        contribution.email,
+        amount:       contribution.amount,
+        notes:        contribution.notes,
+        receipt:      contribution.receipt_url, 
+        receipt_name: contribution.receipt_name,
+        status:       'قيد المراجعة',
+        created_at:   new Date().toISOString()
+      }])
       .select()
       .single();
 
@@ -39,6 +41,7 @@ async function dbInsert(contribution) {
 
 async function dbGetAll() {
   try {
+    const db = getClient();
     const { data, error } = await db
       .from('contributions')
       .select('*')
@@ -54,6 +57,7 @@ async function dbGetAll() {
 
 async function dbUpdateStatus(id, status) {
   try {
+    const db = getClient();
     const { error } = await db
       .from('contributions')
       .update({ status: status })
@@ -68,6 +72,7 @@ async function dbUpdateStatus(id, status) {
 
 async function dbUploadReceipt(file, id) {
   try {
+    const db = getClient();
     const ext = file.name.split('.').pop();
     const path = `receipts/${id}.${ext}`;
 
