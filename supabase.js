@@ -2,7 +2,6 @@
 // استبدل هذه القيم بقيم مشروعك من supabase.com
 const SUPABASE_URL = 'SUPABASE_URL';
 const SUPABASE_ANON_KEY = 'SUPABASE_KEY';
-
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -31,8 +30,8 @@ async function dbInsert(contribution) {
     if (error) throw error;
     return data;
   } catch (err) {
-    console.error("خطأ أثناء إدخال البيانات:", err);
-    throw new Error("فشل في حفظ البيانات بقاعدة البيانات: " + err.message);
+    console.error("خطأ في dbInsert:", err);
+    throw new Error("فشل حفظ البيانات: " + err.message);
   }
 }
 
@@ -46,7 +45,7 @@ async function dbGetAll() {
     if (error) throw error;
     return data || [];
   } catch (err) {
-    console.error("خطأ أثناء جلب البيانات:", err);
+    console.error("خطأ في dbGetAll:", err);
     return [];
   }
 }
@@ -60,7 +59,7 @@ async function dbUpdateStatus(id, status) {
 
     if (error) throw error;
   } catch (err) {
-    console.error("خطأ أثناء تحديث الحالة:", err);
+    console.error("خطأ في dbUpdateStatus:", err);
     throw err;
   }
 }
@@ -82,7 +81,7 @@ async function dbUploadReceipt(file, id) {
 
     return { url: data.publicUrl, name: file.name };
   } catch (err) {
-    console.error("خطأ أثناء رفع الملف:", err);
-    throw new Error("فشل في رفع ملف الإيصال: " + err.message);
+    console.error("خطأ في dbUploadReceipt:", err);
+    throw new Error("حدث مشكلة أثناء رفع ملف الإيصال: " + err.message);
   }
 }
