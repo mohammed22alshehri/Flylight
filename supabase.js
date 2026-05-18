@@ -1,14 +1,15 @@
 // ===== Supabase Safe Configuration =====
-// الكود يقرأ من البيئة مباشرة ولا يحتوي على أي روابط أو مفاتيح ثابتة
+// هذه الكلمات المفتاحية سيقوم الـ Workflow باستبدالها تلقائياً بالقيم الحقيقية أثناء النشر
 const getClient = () => {
-  const url = window.env?.SUPABASE_URL || process.env.SUPABASE_URL || '';
-  const key = window.env?.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+  const url = 'VITE_SUPABASE_URL';
+  const key = 'VITE_SUPABASE_KEY';
   
-  if (!url || !key || url.includes('YOUR_PROJECT_ID')) {
+  if (!url || !key || url.includes('VITE_SUPABASE_URL')) {
     throw new Error("تنبيه: مفاتيح الاتصال الآمنة غائبة عن بيئة التشغيل الحالية.");
   }
   return supabase.createClient(url, key);
 };
+
 
 // ===== Database Operations =====
 
