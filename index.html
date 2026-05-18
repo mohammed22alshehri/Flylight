@@ -11,13 +11,15 @@
     <header>
       <nav>
         <div class="logo">
-          <span class="logo-icon">✈</span>
-          <span class="logo-text">Fly Light Logistics</span>
+          <img src="logo-removebg-preview.png" alt="Fly Light Logo" class="logo-img">
         </div>
-        <ul class="nav-links">
+        <button class="hamburger" id="hamburger" aria-label="القائمة">
+          <span></span><span></span><span></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
           <li><a href="#" class="nav-link active" data-page="home">الرئيسية</a></li>
-          <li><a href="#" class="nav-link" data-page="contribute">المساهمة</a></li>
-          <li><a href="#" class="nav-link" data-page="dashboard">الإدارة</a></li>
+          <li><a href="#" class="nav-link" data-page="contribute">للمساهمة</a></li>
+          <li><a href="#" class="nav-link" data-page="dashboard">المساهمات</a></li>
         </ul>
       </nav>
     </header>
@@ -26,6 +28,10 @@
       <!-- الصفحة الرئيسية -->
       <div id="home" class="page active">
         <section class="hero-section">
+          <div class="hero-image-wrapper">
+            <img src="good_pic.jpg" alt="Fly Light Logistics" class="hero-bg-img">
+            <div class="hero-overlay"></div>
+          </div>
           <div class="hero-content">
             <h1 class="hero-title">Fly Light Logistics Solutions</h1>
             <p class="hero-subtitle">حلول لوجستية متكاملة وموثوقة لنقل البضائع والشحنات بكفاءة واحترافية عالية</p>
@@ -40,8 +46,11 @@
           <div class="container">
             <h2 class="section-title">عن الشركة</h2>
             <div class="about-card">
+             <P class="about-text" >
+                FlyLight 
+              </P>
               <p class="about-text">
-                Fly Light Logistics Solutions هي شركة رائدة في مجال الخدمات اللوجستية، نقدم حلولاً متكاملة للنقل والشحن والتخزين والتوزيع. نلتزم بأعلى معايير الجودة والأمان لضمان وصول شحناتكم بسلامة وفي الوقت المحدد. فريقنا المحترف متاح على مدار الساعة لخدمتكم.
+هي شركة ناشئة واعدة في مجال الخدمات اللوجستية المتكاملة، تم بناؤها وتطويرها بالكامل بأيدي مجموعة من الطلاب الشغوفين والمتميزين. نحن في بداية طريقنا، ونؤمن بأن دعمكم ومساهمتكم معنا هي الركيزة الأساسية لنخطو أولى خطواتنا بثقة نحو رحلة نجاحنا وتميزنا في تقديم حلول النقل والشحن والتوزيع. شاركونا النجاح، ودعونا نكبر معاً.
               </p>
             </div>
           </div>
@@ -125,7 +134,8 @@
 
               <div class="iban-card">
                 <p class="iban-label">رقم الحساب البنكي (IBAN)</p>
-                <div class="iban-number">SA03 8000 0000 6080 1016 7519</div>
+                <p class="iban-label">بنك الراجحي اسم صاحب الحساب: ﻣﺤﻤﺪ ﻋﺒﺪﺍﻟﻠﻪ ﻋﻴﺴﻰ ﺍﻟﻌﻠﻲ</p>
+                <div class="iban-number">SA0880000868608016214271</div>
                 <button class="btn-copy" onclick="copyIBAN()">نسخ</button>
               </div>
 
@@ -148,7 +158,8 @@
 
                 <div class="form-group">
                   <label>مبلغ المساهمة (ريال سعودي)</label>
-                  <input type="number" id="amount" required min="1" placeholder="10000">
+                  <input type="number" id="amount" required min="50" step="50" placeholder="500">
+                  <span class="field-hint">يجب أن يكون المبلغ من مضاعفات 50 (مثال: 50، 100، 500، 1000...)</span>
                 </div>
 
                 <div class="form-group">
@@ -176,66 +187,91 @@
 
       <!-- صفحة الإدارة -->
       <div id="dashboard" class="page">
-        <section class="hero-section hero-small">
-          <div class="hero-content">
-            <h1 class="hero-title">لوحة التحكم المالية</h1>
-            <p class="hero-subtitle">إدارة ومراجعة المساهمات والإيصالات المالية</p>
-          </div>
-        </section>
 
-        <section class="dashboard-section">
-          <div class="container">
-            <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-info">
-                  <div class="stat-value" id="totalCount">0</div>
-                  <div class="stat-label">إجمالي المساهمات</div>
+        <!-- شاشة تسجيل الدخول -->
+        <div id="adminLogin" class="admin-login-screen">
+          <div class="login-card">
+            <div class="login-icon">🔐</div>
+            <h2>لوحة تحكم الإدارة</h2>
+            <p>أدخل كلمة المرور للوصول</p>
+            <div class="form-group">
+              <input type="password" id="adminPassword" placeholder="كلمة المرور" class="login-input">
+            </div>
+            <div id="loginError" class="login-error">كلمة المرور غير صحيحة</div>
+            <button class="btn btn-primary btn-block" onclick="adminLogin()">دخول</button>
+          </div>
+        </div>
+
+        <!-- محتوى لوحة التحكم -->
+        <div id="adminContent" style="display:none">
+          <section class="hero-section hero-small">
+            <div class="hero-content">
+              <h1 class="hero-title">لوحة التحكم المالية</h1>
+              <p class="hero-subtitle">إدارة ومراجعة المساهمات والإيصالات المالية</p>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="container">
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-icon">📊</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">إجمالي المساهمات</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">💰</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="totalSum">0</div>
+                    <div class="stat-label">المبلغ الكلي (ريال)</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">⏳</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="pendingCount">0</div>
+                    <div class="stat-label">قيد المراجعة</div>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon">✅</div>
+                  <div class="stat-info">
+                    <div class="stat-value" id="approvedCount">0</div>
+                    <div class="stat-label">تمت الموافقة</div>
+                  </div>
                 </div>
               </div>
-              <div class="stat-card">
-                <div class="stat-icon">💰</div>
-                <div class="stat-info">
-                  <div class="stat-value" id="totalSum">0</div>
-                  <div class="stat-label">المبلغ الكلي (ريال)</div>
+
+              <!-- جدول المساهمات -->
+              <div class="table-card">
+                <div class="table-header">
+                  <h3>📋 جميع المساهمات</h3>
+                  <button class="btn-logout" onclick="adminLogout()">تسجيل الخروج</button>
                 </div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-info">
-                  <div class="stat-value" id="pendingCount">0</div>
-                  <div class="stat-label">قيد المراجعة</div>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>الاسم</th>
+                        <th>الهاتف</th>
+                        <th>البريد</th>
+                        <th>المبلغ</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                      <tr><td colspan="7" class="empty-state">لا توجد مساهمات</td></tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
-
-            <div class="table-card">
-              <div class="table-header">
-                <h3>جميع المساهمات</h3>
-              </div>
-              <div class="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>الاسم</th>
-                      <th>الهاتف</th>
-                      <th>البريد</th>
-                      <th>المبلغ</th>
-                      <th>التاريخ</th>
-                      <th>الحالة</th>
-                      <th>الإجراءات</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tableBody">
-                    <tr>
-                      <td colspan="7" class="empty-state">لا توجد مساهمات</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </main>
 
@@ -262,7 +298,10 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="script.js"></script>
+</body>
+</html>
 </body>
 </html>
