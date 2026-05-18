@@ -1,10 +1,12 @@
 // ===== Supabase Safe Configuration =====
 // هذه الكلمات المفتاحية سيقوم الـ Workflow باستبدالها تلقائياً بالقيم الحقيقية أثناء النشر
+// ===== Supabase Safe Configuration =====
 const getClient = () => {
-  const url = 'VITE_SUPABASE_URL';
-  const key = 'VITE_SUPABASE_KEY';
+  // وضعنا كلمة PLACEHOLDER ليتعرف عليها الـ Workflow ويستبدلها
+  const url = 'PLACEHOLDER_SUPABASE_URL';
+  const key = 'PLACEHOLDER_SUPABASE_KEY';
   
-  if (!url || !key || url.includes('VITE_SUPABASE_URL')) {
+  if (!url || !key || url.includes('PLACEHOLDER_SUPABASE_URL')) {
     throw new Error("تنبيه: مفاتيح الاتصال الآمنة غائبة عن بيئة التشغيل الحالية.");
   }
   return supabase.createClient(url, key);
