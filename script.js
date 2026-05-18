@@ -5,9 +5,10 @@ let allContributions = [];
 
 // ===== عند تحميل الصفحة بالكامل =====
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. تهيئة القائمة المتنقلة للموبايل (مهم جداً لتوافق الجوال)
+  // تهيئة القائمة المتنقلة للموبايل (مهم جداً لتوافق الجوال)
   const hamburger = document.getElementById('hamburger');
   const navLinks  = document.getElementById('navLinks');
+  
   if (hamburger && navLinks) {
     hamburger.addEventListener('click', () => {
       hamburger.classList.toggle('open');
@@ -22,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  // 2. ربط أزرار القائمة العلوية بالتنقل بين الصفحات
+  // ربط أزرار القائمة بالتنقل بين الصفحات
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -31,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3. تشغيل النماذج والفلاتر بشكل آمن
+  // تشغيل العمليات بشكل آمن
   try { setupFilters(); } catch(e) { console.error(e); }
   try { setupForm(); }    catch(e) { console.error(e); }
 });
@@ -104,7 +105,6 @@ function setupForm() {
         throw new Error('الرجاء إرفاق صورة أو ملف إيصال التحويل المالي.');
       }
 
-      // تجهيز البيانات
       const contributionData = {
         name: document.getElementById('fullName').value,
         phone: document.getElementById('phoneNumber').value,
@@ -117,7 +117,6 @@ function setupForm() {
 
       const tempId = 'rec_' + Math.random().toString(36).substr(2, 9);
       
-      // رفع الملف ثم الإدخال بقاعدة البيانات
       const uploadRes = await dbUploadReceipt(file, tempId);
       contributionData.receipt_url = uploadRes.url;
 
