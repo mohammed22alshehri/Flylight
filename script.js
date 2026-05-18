@@ -1,6 +1,6 @@
 // ===== إعداد Supabase =====
-const SUPABASE_URL = 'ضع_رابط_مشروعك_هنا'; 
-const SUPABASE_KEY = 'ضع_مفتاح_anon_key_هنا';
+const SUPABASE_URL = 'SUPABASE_URL'; 
+const SUPABASE_KEY = 'SUPABASE_KEY';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_PASS = 'flylight2024';
