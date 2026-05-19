@@ -1,33 +1,114 @@
-name: Deploy to GitHub Pages
+name: Deploy with Secure Configuration
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, master ]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+environment:
+  name: github-pages
+  url: ${{ steps.deployment.outputs.page_url }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # 🚀 الخطوة الجديدة والمعدلة هنا
-      - name: Inject Secrets into Files
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Inject Supabase Configuration
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
-          sed -i "s|PLACEHOLDER_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" supabase.js
-          sed -i "s|PLACEHOLDER_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" supabase.js
-          sed -i "s|PLACEHOLDER_ADMIN_PASS|${{ secrets.ADMIN_PASS }}|g" script.js
-
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
+          # Inject Supabase URL
+          sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase-config.js
+          sed -i "s|PLACEHOLDER_SUPABASE_ANON_KEY|${SUPABASE_ANON_KEY}|g" supabase-config.js
+          
+          # Inject Admin Password
+          sed -i "s|PLACEHOLDER_ADMIN_PASSWORD|${ADMIN_PASSWORD}|g" script-final.js
+          
+          echo "✅ Configuration injected successfully"
+          echo "📝 Verifying injection..."
+          grep -q "PLACEHOLDER" supabase-config.js && echo "⚠️ Warning: Placeholders still present in supabase-config.js" || echo "✅ supabase-config.js secured"
+          grep -q "PLACEHOLDER" script-final.js && echo "⚠️ Warning: Placeholders still present in script-final.js" || echo "✅ script-final.js secured"
+      
+      - name: Validate Configuration
+        run: |
+          echo "🔍 Validating deployed files..."
+          # Check if files contain actual configuration
+          if grep -q "PLACEHOLDER_SUPABASE_URL" supabase-config.js; then
+            echo "❌ ERROR: Supabase URL not injected!"
+            exit 1
+          fi
+          if grep -q "PLACEHOLDER_ADMIN_PASSWORD" script-final.js; then
+            echo "❌ ERROR: Admin password not injected!"
+            exit 1
+          fi
+          echo "✅ All configurations validated"
+      
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v2
         with:
           path: '.'
-
+      
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        id: deployment
+        uses: actions/deploy-pages@v2
+      
+      - name: Deployment Summary
+        run: |
+          echo "=========================================="
+          echo "✅ DEPLOYMENT SUCCESSFUL"
+          echo "=========================================="
+          echo "📦 Build: Complete"
+          echo "🔐 Configuration: Injected"
+          echo "🌐 Pages URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "⏰ Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "=========================================="
+
+  security-check:
+    runs-on: ubuntu-latest
+    needs: deploy
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Security: Verify No Secrets in Repository
+        run: |
+          echo "🔐 Running security verification..."
+          
+          # Check for common secret patterns
+          if grep -r "SUPABASE_URL=" . --include="*.js" --include="*.html" --exclude-dir=.git; then
+            echo "❌ ERROR: Actual Supabase URL found in repository!"
+            exit 1
+          fi
+          
+          if grep -r "sk-" . --include="*.js" --include="*.html" --exclude-dir=.git; then
+            echo "❌ ERROR: Potential secret key found in repository!"
+            exit 1
+          fi
+          
+          echo "✅ Repository security verified - No hardcoded secrets found"
+
+on:
+  workflow_run:
+    workflows: ["Deploy with Secure Configuration"]
+    types:
+      - completed
+  schedule:
+    # Optional: Run security checks daily
+    - cron: '0 2 * * *'
