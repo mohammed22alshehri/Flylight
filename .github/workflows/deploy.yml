@@ -1,5 +1,4 @@
 name: Deploy Fly Light with Secure Configuration
-
 on:
   push:
     branches: [ main, master ]
@@ -30,8 +29,8 @@ jobs:
         run: |
           echo "🔐 Injecting secrets..."
           sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase.js
-          sed -i "s|PLACEHOLDER_SUPABASE_KEY|${SUPABASE_KEY}|g" supabase.js
-          sed -i "s|PLACEHOLDER_ADMIN_PASS|${ADMIN_PASS}|g" script.js
+          sed -i "s|PLACEHOLDER_SUPABASE_ANON_KEY|${SUPABASE_KEY}|g" supabase.js
+          sed -i "s|PLACEHOLDER_ADMIN_PASSWORD|${ADMIN_PASS}|g" script.js
           echo "✅ Secrets injected successfully"
       
       - name: Verify No Placeholders Remain
@@ -41,12 +40,12 @@ jobs:
             echo "❌ ERROR: SUPABASE_URL placeholder still present!"
             exit 1
           fi
-          if grep -r "PLACEHOLDER_SUPABASE_KEY" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "❌ ERROR: SUPABASE_KEY placeholder still present!"
+          if grep -r "PLACEHOLDER_SUPABASE_ANON_KEY" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ ERROR: SUPABASE_ANON_KEY placeholder still present!"
             exit 1
           fi
-          if grep -r "PLACEHOLDER_ADMIN_PASS" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "❌ ERROR: ADMIN_PASS placeholder still present!"
+          if grep -r "PLACEHOLDER_ADMIN_PASSWORD" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ ERROR: ADMIN_PASSWORD placeholder still present!"
             exit 1
           fi
           echo "✅ All placeholders verified and replaced"
@@ -85,7 +84,7 @@ jobs:
           echo "🔐 Running security check..."
           FOUND_ISSUES=0
           
-          if grep -r "PLACEHOLDER_SUPABASE" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+          if grep -r "PLACEHOLDER_SUPABASE\|PLACEHOLDER_ADMIN" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
             echo "⚠️  WARNING: PLACEHOLDER values found"
             FOUND_ISSUES=1
           fi
