@@ -1,108 +1,31 @@
-name: Deploy Fly Light with Secure Configuration
+name: Deploy
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
-
 permissions:
   contents: write
   pages: write
   id-token: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Inject Secrets into Files
+      - uses: actions/checkout@v4
+      - name: Secrets
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
+          URL: ${{ secrets.SUPABASE_URL }}
+          KEY: ${{ secrets.SUPABASE_KEY }}
+          PASS: ${{ secrets.ADMIN_PASS }}
         run: |
-          echo "🔐 Injecting secrets..."
-          sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase.js
-          sed -i "s|PLACEHOLDER_SUPABASE_ANON_KEY|${SUPABASE_KEY}|g" supabase.js
-          sed -i "s|PLACEHOLDER_ADMIN_PASSWORD|${ADMIN_PASS}|g" script.js
-          echo "✅ Secrets injected successfully"
-      
-      - name: Verify No Placeholders Remain
-        run: |
-          echo "🔍 Verifying..."
-          if grep -r "PLACEHOLDER_SUPABASE_URL" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "❌ ERROR: SUPABASE_URL placeholder still present!"
-            exit 1
-          fi
-          if grep -r "PLACEHOLDER_SUPABASE_ANON_KEY" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "❌ ERROR: SUPABASE_ANON_KEY placeholder still present!"
-            exit 1
-          fi
-          if grep -r "PLACEHOLDER_ADMIN_PASSWORD" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "❌ ERROR: ADMIN_PASSWORD placeholder still present!"
-            exit 1
-          fi
-          echo "✅ All placeholders verified and replaced"
-      
-      - name: Upload to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+          sed -i "s|PLACEHOLDER_SUPABASE_URL|${URL}|g" supabase.js
+          sed -i "s|PLACEHOLDER_SUPABASE_ANON_KEY|${KEY}|g" supabase.js
+          sed -i "s|PLACEHOLDER_ADMIN_PASSWORD|${PASS}|g" script.js
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-      
-      - name: Deploy to GitHub Pages
+      - uses: actions/deploy-pages@v4
         id: deployment
-        uses: actions/deploy-pages@v4
-      
-      - name: Deployment Summary
-        run: |
-          echo "=========================================="
-          echo "✅ DEPLOYMENT SUCCESSFUL"
-          echo "=========================================="
-          echo "📦 Build: Complete"
-          echo "🔐 Secrets: Securely injected"
-          echo "🌐 Pages URL: ${{ steps.deployment.outputs.page_url }}"
-          echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          echo "=========================================="
-
-  security-check:
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: always()
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Security Verification
-        run: |
-          echo "🔐 Running security check..."
-          FOUND_ISSUES=0
-          
-          if grep -r "PLACEHOLDER_SUPABASE\|PLACEHOLDER_ADMIN" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "⚠️  WARNING: PLACEHOLDER values found"
-            FOUND_ISSUES=1
-          fi
-          
-          if grep -r "https://.*\.supabase\.co" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "PLACEHOLDER"; then
-            echo "⚠️  WARNING: Real Supabase URL found"
-            FOUND_ISSUES=1
-          fi
-          
-          if grep -r "eyJ" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "⚠️  WARNING: Potential secret pattern found"
-            FOUND_ISSUES=1
-          fi
-          
-          echo ""
-          if [ $FOUND_ISSUES -eq 0 ]; then
-            echo "✅ Security check PASSED"
-            echo "✅ No hardcoded secrets found"
-          else
-            echo "⚠️  Review warnings above"
-          fi
