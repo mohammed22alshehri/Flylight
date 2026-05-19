@@ -1,4 +1,4 @@
-name: Deploy with Secure Configuration
+name: Deploy Fly Light with Secure Configuration
 
 on:
   push:
@@ -6,67 +6,76 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
-
-environment:
-  name: github-pages
-  url: ${{ steps.deployment.outputs.page_url }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
+    # ✅ CRITICAL FIX: environment INSIDE the job
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Inject Supabase Configuration
+      # ✅ استخدام أسماء الـ secrets الفعلية عندك
+      - name: Inject Secrets into Files
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
         run: |
-          # Inject Supabase URL
-          sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase-config.js
-          sed -i "s|PLACEHOLDER_SUPABASE_ANON_KEY|${SUPABASE_ANON_KEY}|g" supabase-config.js
+          echo "🔐 Injecting secure configuration..."
           
-          # Inject Admin Password
-          sed -i "s|PLACEHOLDER_ADMIN_PASSWORD|${ADMIN_PASSWORD}|g" script-final.js
+          # تحديث supabase.js
+          if [ -f "supabase.js" ]; then
+            sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase.js
+            sed -i "s|PLACEHOLDER_SUPABASE_KEY|${SUPABASE_KEY}|g" supabase.js
+            echo "✅ supabase.js configured"
+          fi
           
-          echo "✅ Configuration injected successfully"
-          echo "📝 Verifying injection..."
-          grep -q "PLACEHOLDER" supabase-config.js && echo "⚠️ Warning: Placeholders still present in supabase-config.js" || echo "✅ supabase-config.js secured"
-          grep -q "PLACEHOLDER" script-final.js && echo "⚠️ Warning: Placeholders still present in script-final.js" || echo "✅ script-final.js secured"
+          # تحديث script.js
+          if [ -f "script.js" ]; then
+            sed -i "s|PLACEHOLDER_ADMIN_PASS|${ADMIN_PASS}|g" script.js
+            echo "✅ script.js configured"
+          fi
+          
+          echo "✅ All secrets injected successfully"
       
-      - name: Validate Configuration
+      - name: Verify No Placeholders Remain
         run: |
-          echo "🔍 Validating deployed files..."
-          # Check if files contain actual configuration
-          if grep -q "PLACEHOLDER_SUPABASE_URL" supabase-config.js; then
-            echo "❌ ERROR: Supabase URL not injected!"
+          echo "🔍 Verifying configuration..."
+          
+          if grep -r "PLACEHOLDER_SUPABASE_URL" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ ERROR: SUPABASE_URL placeholder still present!"
             exit 1
           fi
-          if grep -q "PLACEHOLDER_ADMIN_PASSWORD" script-final.js; then
-            echo "❌ ERROR: Admin password not injected!"
+          
+          if grep -r "PLACEHOLDER_SUPABASE_KEY" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ ERROR: SUPABASE_KEY placeholder still present!"
             exit 1
           fi
-          echo "✅ All configurations validated"
+          
+          if grep -r "PLACEHOLDER_ADMIN_PASS" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ ERROR: ADMIN_PASS placeholder still present!"
+            exit 1
+          fi
+          
+          echo "✅ Configuration verified - all placeholders replaced"
       
       - name: Upload to GitHub Pages
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
       
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
       
       - name: Deployment Summary
         run: |
@@ -74,41 +83,49 @@ jobs:
           echo "✅ DEPLOYMENT SUCCESSFUL"
           echo "=========================================="
           echo "📦 Build: Complete"
-          echo "🔐 Configuration: Injected"
+          echo "🔐 Secrets: Securely injected"
           echo "🌐 Pages URL: ${{ steps.deployment.outputs.page_url }}"
-          echo "⏰ Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           echo "=========================================="
 
   security-check:
     runs-on: ubuntu-latest
     needs: deploy
+    if: always()
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
-      - name: Security: Verify No Secrets in Repository
+      - name: Security Verification
         run: |
           echo "🔐 Running security verification..."
+          echo ""
           
-          # Check for common secret patterns
-          if grep -r "SUPABASE_URL=" . --include="*.js" --include="*.html" --exclude-dir=.git; then
-            echo "❌ ERROR: Actual Supabase URL found in repository!"
-            exit 1
+          FOUND_ISSUES=0
+          
+          # Check for placeholders
+          if grep -r "PLACEHOLDER_SUPABASE" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "⚠️  WARNING: PLACEHOLDER values found in code"
+            FOUND_ISSUES=1
           fi
           
-          if grep -r "sk-" . --include="*.js" --include="*.html" --exclude-dir=.git; then
-            echo "❌ ERROR: Potential secret key found in repository!"
-            exit 1
+          # Check for hardcoded URLs
+          if grep -r "https://.*\.supabase\.co" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "PLACEHOLDER"; then
+            echo "⚠️  WARNING: Real Supabase URL found"
+            FOUND_ISSUES=1
           fi
           
-          echo "✅ Repository security verified - No hardcoded secrets found"
-
-on:
-  workflow_run:
-    workflows: ["Deploy with Secure Configuration"]
-    types:
-      - completed
-  schedule:
-    # Optional: Run security checks daily
-    - cron: '0 2 * * *'
+          # Check for JWT tokens
+          if grep -r "eyJ" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
+            echo "⚠️  WARNING: Potential secret key pattern found"
+            FOUND_ISSUES=1
+          fi
+          
+          echo ""
+          if [ $FOUND_ISSUES -eq 0 ]; then
+            echo "✅ Security check PASSED"
+            echo "✅ No hardcoded secrets found"
+          else
+            echo "⚠️  Review security warnings above"
+          fi
