@@ -1,5 +1,5 @@
 // ===== Configuration =====
-const ADMIN_PASSWORD_HASH = '80006ef1653e4cc657cff3b177b35c99c83ba8887aa7fa28249637633a88728f'; // SHA-256 hash
+const ADMIN_PASSWORD = 'flylight2024';
 const APP_VERSION = '2.0.0';
 
 let selectedContribution = null;
@@ -9,18 +9,15 @@ let isInitialized = false;
 document.addEventListener('DOMContentLoaded', async function() {
   console.log(`🚀 Fly Light Logistics v${APP_VERSION} initializing...`);
   
-  // Initialize Supabase
   await initSupabase();
   isInitialized = true;
   
-  // Setup event listeners
   setupHamburgerMenu();
   setupNavigationLinks();
   setupFileUpload();
   setupForm();
   setupScrollEffects();
   
-  // Load initial page
   switchPage('home');
   
   console.log('✅ Application ready');
@@ -63,24 +60,19 @@ function setupNavigationLinks() {
 }
 
 function switchPage(pageName) {
-  // Hide all pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   
-  // Show selected page
   const target = document.getElementById(pageName);
   if (target) target.classList.add('active');
   
-  // Mark nav link as active
   const activeLink = document.querySelector(`[data-page="${pageName}"]`);
   if (activeLink) activeLink.classList.add('active');
   
-  // Handle dashboard
   if (pageName === 'dashboard') {
     checkAdminSession();
   }
   
-  // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -92,23 +84,11 @@ function checkAdminSession() {
   if (loggedIn) loadDashboard();
 }
 
-// Hash function for password security
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function adminLogin() {
+function adminLogin() {
   const password = document.getElementById('adminPassword').value;
   const errorEl = document.getElementById('loginError');
   
-  // Hash the entered password
-  const hashedPassword = await hashPassword(password);
-  
-  if (hashedPassword === ADMIN_PASSWORD_HASH) {
+  if (password === ADMIN_PASSWORD) {
     sessionStorage.setItem('adminLoggedIn', 'true');
     document.getElementById('adminPassword').value = '';
     errorEl.style.display = 'none';
@@ -127,7 +107,6 @@ function adminLogout() {
   showToast('تم تسجيل الخروج', 'success');
 }
 
-// Handle Enter key on password input
 document.addEventListener('DOMContentLoaded', function() {
   const passInput = document.getElementById('adminPassword');
   if (passInput) {
@@ -146,7 +125,6 @@ function setupFileUpload() {
   
   uploadArea.addEventListener('click', () => fileInput.click());
   
-  // Drag and drop
   uploadArea.addEventListener('dragover', e => {
     e.preventDefault();
     uploadArea.style.borderColor = '#0D6C70';
@@ -196,7 +174,6 @@ function setupForm() {
   const amountInput = document.getElementById('amount');
   if (!form) return;
   
-  // Real-time validation
   amountInput.addEventListener('input', function() {
     const hint = this.closest('.form-group').querySelector('.field-hint');
     if (this.value && !validateAmount(this.value)) {
@@ -208,7 +185,6 @@ function setupForm() {
     }
   });
   
-  // Form submission
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -244,10 +220,8 @@ function setupForm() {
         date: new Date().toLocaleDateString('ar-SA')
       };
       
-      // Insert to Supabase
       const result = await dbInsertContribution(contribution);
       if (result) {
-        // Show success message
         document.getElementById('successMsg').style.display = 'flex';
         form.reset();
         document.getElementById('filePreview').classList.remove('active');
@@ -286,19 +260,16 @@ function copyIBAN() {
 async function loadDashboard() {
   const contributions = await dbGetAllContributions();
   
-  // Calculate statistics - FIXED: Only count approved contributions in total
   const approved = contributions.filter(c => c.status === 'تمت الموافقة');
   const pending = contributions.filter(c => c.status === 'قيد المراجعة');
   
-  const totalAmount = approved.reduce((sum, c) => sum + (c.amount || 0), 0);
+  const totalAmount = approved.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
   
-  // Update stat cards
   document.getElementById('totalCount').textContent = contributions.length;
   document.getElementById('totalSum').textContent = totalAmount.toLocaleString('ar-SA');
   document.getElementById('pendingCount').textContent = pending.length;
   document.getElementById('approvedCount').textContent = approved.length;
   
-  // Update table
   const tbody = document.getElementById('tableBody');
   if (contributions.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" class="empty-state">لا توجد مساهمات</td></tr>';
@@ -310,7 +281,7 @@ async function loadDashboard() {
       <td>${c.name}</td>
       <td dir="ltr">${c.phone}</td>
       <td>${c.email}</td>
-      <td><strong>${c.amount.toLocaleString('ar-SA')} ر.س</strong></td>
+      <td><strong>${parseFloat(c.amount).toLocaleString('ar-SA')} ر.س</strong></td>
       <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('ar-SA') : c.date || '-'}</td>
       <td>${getStatusBadge(c.status)}</td>
       <td>
@@ -365,8 +336,8 @@ async function viewDetails(id) {
   if (!selectedContribution) return;
   
   const c = selectedContribution;
-  const receiptHTML = c.receipt_base64
-    ? `<img src="${c.receipt_base64}" class="receipt-image" alt="إيصال" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">`
+  const receiptHTML = c.receipt
+    ? `<img src="${c.receipt}" class="receipt-image" alt="إيصال" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">`
     : '<p style="color: #6B7280;">لم يتم العثور على الإيصال</p>';
   
   document.getElementById('modalBody').innerHTML = `
@@ -374,7 +345,7 @@ async function viewDetails(id) {
       <tr><td>الاسم</td><td>${c.name}</td></tr>
       <tr><td>الهاتف</td><td dir="ltr">${c.phone}</td></tr>
       <tr><td>البريد</td><td>${c.email}</td></tr>
-      <tr><td>المبلغ</td><td><strong>${c.amount.toLocaleString('ar-SA')} ريال سعودي</strong></td></tr>
+      <tr><td>المبلغ</td><td><strong>${parseFloat(c.amount).toLocaleString('ar-SA')} ريال سعودي</strong></td></tr>
       <tr><td>التاريخ</td><td>${c.created_at ? new Date(c.created_at).toLocaleDateString('ar-SA') : c.date}</td></tr>
       <tr><td>الحالة</td><td>${getStatusBadge(c.status)}</td></tr>
       ${c.review_date ? `<tr><td>تاريخ المراجعة</td><td>${c.review_date}</td></tr>` : ''}
@@ -401,7 +372,6 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
-// Close on ESC or overlay click
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
