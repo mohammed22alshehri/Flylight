@@ -393,10 +393,236 @@ async function viewDetails(id) {
         <button class="btn btn-reject-full" onclick="rejectContribution(${c.id}); closeModal()">✗ رفض</button>
       </div>
     ` : ''}
+    ${c.status === 'تمت الموافقة' ? `
+      <div style="margin-top: 1.5rem;">
+        <button class="btn btn-approve-full" onclick="downloadCertificates(${c.id})" style="width: 100%;">
+          📜 تحميل شهادات الأسهم (${Math.floor(parseFloat(c.amount) / 50)} شهادة)
+        </button>
+      </div>
+    ` : ''}
   `;
   
   document.getElementById('detailsModal').classList.add('active');
   document.body.style.overflow = 'hidden';
+}
+
+// ===== Download Share Certificates =====
+async function downloadCertificates(contributionId) {
+  const contributions = await dbGetAllContributions();
+  const c = contributions.find(x => x.id === contributionId);
+  if (!c) {
+    showToast('لم يتم العثور على المساهمة', 'error');
+    return;
+  }
+  
+  const numShares = Math.floor(parseFloat(c.amount) / 50);
+  const contributionDate = c.created_at 
+    ? new Date(c.created_at).toLocaleDateString('ar-SA')
+    : (c.date || new Date().toLocaleDateString('ar-SA'));
+  
+  showToast(`جاري إنشاء ${numShares} شهادة...`, 'success');
+  
+  // Create container with all certificates
+  const container = document.createElement('div');
+  container.style.cssText = 'position: absolute; left: -9999px; top: 0; background: white;';
+  
+  for (let i = 1; i <= numShares; i++) {
+    const ticketNumber = `FL-${String(c.id).padStart(4, '0')}-${String(i).padStart(3, '0')}`;
+    container.appendChild(createCertificateHTML(c, ticketNumber, contributionDate, i, numShares));
+  }
+  
+  document.body.appendChild(container);
+  
+  // Generate PDF
+  const opt = {
+    margin: 0,
+    filename: `شهادات_أسهم_${c.name.replace(/\s/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    pagebreak: { mode: 'avoid-all' }
+  };
+  
+  try {
+    await html2pdf().set(opt).from(container).save();
+    showToast('✅ تم تحميل الشهادات بنجاح', 'success');
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    showToast('خطأ في إنشاء PDF', 'error');
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
+// Create certificate HTML element
+function createCertificateHTML(contribution, ticketNumber, dateStr, index, total) {
+  const div = document.createElement('div');
+  div.style.cssText = `
+    width: 297mm;
+    height: 210mm;
+    page-break-after: always;
+    font-family: 'Tajawal', 'Segoe UI', sans-serif;
+    direction: rtl;
+    position: relative;
+    background: #ffffff;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  `;
+  
+  div.innerHTML = `
+    <div style="
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F0FAFA 100%);
+      position: relative;
+      padding: 20mm;
+      box-sizing: border-box;
+      border: 8px solid #1E9196;
+      border-radius: 0;
+    ">
+      <!-- Decorative corners -->
+      <div style="position: absolute; top: 15mm; right: 15mm; width: 30mm; height: 30mm; border-top: 4px solid #0A1C33; border-right: 4px solid #0A1C33;"></div>
+      <div style="position: absolute; top: 15mm; left: 15mm; width: 30mm; height: 30mm; border-top: 4px solid #0A1C33; border-left: 4px solid #0A1C33;"></div>
+      <div style="position: absolute; bottom: 15mm; right: 15mm; width: 30mm; height: 30mm; border-bottom: 4px solid #0A1C33; border-right: 4px solid #0A1C33;"></div>
+      <div style="position: absolute; bottom: 15mm; left: 15mm; width: 30mm; height: 30mm; border-bottom: 4px solid #0A1C33; border-left: 4px solid #0A1C33;"></div>
+      
+      <!-- Header -->
+      <div style="text-align: center; margin-top: 15mm; padding-bottom: 8mm; border-bottom: 3px double #1E9196;">
+        <div style="
+          display: inline-block;
+          background: linear-gradient(135deg, #0A1C33 0%, #14365C 100%);
+          color: white;
+          padding: 8mm 15mm;
+          border-radius: 50px;
+          font-size: 28pt;
+          font-weight: 900;
+          letter-spacing: 2px;
+          box-shadow: 0 8px 20px rgba(30, 145, 150, 0.3);
+        ">
+          FLY LIGHT LOGISTICS
+        </div>
+        <p style="font-size: 14pt; color: #6B7280; margin-top: 5mm; font-weight: 600;">
+          حلول لوجستية متكاملة وموثوقة
+        </p>
+      </div>
+      
+      <!-- Title -->
+      <div style="text-align: center; margin-top: 10mm;">
+        <h1 style="
+          font-size: 42pt;
+          color: #0A1C33;
+          margin: 0;
+          font-weight: 900;
+          letter-spacing: 3px;
+        ">شهادة سهم</h1>
+        <div style="
+          width: 60mm;
+          height: 4px;
+          background: linear-gradient(135deg, #1E9196 0%, #0D6C70 100%);
+          margin: 4mm auto;
+          border-radius: 4px;
+        "></div>
+        <p style="font-size: 14pt; color: #1E9196; font-weight: 700;">Share Certificate</p>
+      </div>
+      
+      <!-- Body -->
+      <div style="margin-top: 12mm; padding: 0 20mm;">
+        <p style="font-size: 14pt; color: #1F2937; text-align: center; line-height: 2; margin-bottom: 8mm;">
+          تشهد شركة <strong style="color: #1E9196;">Fly Light Logistics Solutions</strong> بأن:
+        </p>
+        
+        <div style="
+          background: rgba(30, 145, 150, 0.08);
+          border-right: 5px solid #1E9196;
+          padding: 8mm 10mm;
+          border-radius: 12px;
+          margin-bottom: 8mm;
+        ">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13pt;">
+            <tr>
+              <td style="padding: 3mm 5mm; font-weight: 700; color: #0A1C33; width: 30%;">الاسم:</td>
+              <td style="padding: 3mm 5mm; color: #1F2937; font-weight: 600;">${contribution.name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 3mm 5mm; font-weight: 700; color: #0A1C33;">رقم الهاتف:</td>
+              <td style="padding: 3mm 5mm; color: #1F2937; direction: ltr; text-align: right;">${contribution.phone}</td>
+            </tr>
+            <tr>
+              <td style="padding: 3mm 5mm; font-weight: 700; color: #0A1C33;">التاريخ:</td>
+              <td style="padding: 3mm 5mm; color: #1F2937;">${dateStr}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <p style="font-size: 13pt; color: #1F2937; text-align: center; line-height: 2;">
+          يملك <strong style="color: #1E9196; font-size: 16pt;">سهماً واحداً</strong> من أسهم رأسمال الشركة،
+          <br>
+          بقيمة اسمية تبلغ <strong style="color: #1E9196; font-size: 16pt;">(٥٠) خمسون ريالاً سعودياً</strong> فقط لا غير.
+        </p>
+      </div>
+      
+      <!-- Ticket Number & Footer -->
+      <div style="
+        position: absolute;
+        bottom: 25mm;
+        right: 25mm;
+        left: 25mm;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      ">
+        <div style="text-align: center;">
+          <p style="font-size: 10pt; color: #6B7280; margin-bottom: 2mm;">رقم التذكرة</p>
+          <div style="
+            background: linear-gradient(135deg, #1E9196 0%, #0D6C70 100%);
+            color: white;
+            padding: 4mm 10mm;
+            border-radius: 50px;
+            font-size: 14pt;
+            font-weight: 800;
+            letter-spacing: 2px;
+            direction: ltr;
+            box-shadow: 0 4px 15px rgba(30, 145, 150, 0.4);
+          ">
+            ${ticketNumber}
+          </div>
+        </div>
+        
+        <div style="text-align: center;">
+          <p style="font-size: 10pt; color: #6B7280;">السهم رقم</p>
+          <p style="font-size: 24pt; font-weight: 900; color: #0A1C33; margin: 0;">${index} / ${total}</p>
+        </div>
+        
+        <div style="text-align: center;">
+          <div style="
+            width: 50mm;
+            height: 20mm;
+            border-bottom: 2px solid #0A1C33;
+            margin-bottom: 2mm;
+          "></div>
+          <p style="font-size: 11pt; color: #1F2937; font-weight: 700;">توقيع الإدارة المالية</p>
+        </div>
+      </div>
+      
+      <!-- Watermark -->
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-30deg);
+        font-size: 80pt;
+        color: rgba(30, 145, 150, 0.04);
+        font-weight: 900;
+        pointer-events: none;
+        white-space: nowrap;
+      ">
+        FLY LIGHT
+      </div>
+    </div>
+  `;
+  
+  return div;
 }
 
 function closeModal() {
