@@ -422,9 +422,19 @@ async function downloadCertificates(contributionId) {
   
   showToast(`جاري إنشاء ${numShares} شهادة...`, 'success');
   
-  // Create container with all certificates
+  // Create container - visible but off-screen so html2canvas can render it
   const container = document.createElement('div');
-  container.style.cssText = 'position: absolute; left: -9999px; top: 0; background: white;';
+  container.id = 'certificates-container';
+  container.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1123px;
+    background: white;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+  `;
   
   for (let i = 1; i <= numShares; i++) {
     const ticketNumber = `FL-${String(c.id).padStart(4, '0')}-${String(i).padStart(3, '0')}`;
@@ -433,14 +443,24 @@ async function downloadCertificates(contributionId) {
   
   document.body.appendChild(container);
   
+  // Wait for fonts and rendering
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
   // Generate PDF
   const opt = {
     margin: 0,
     filename: `شهادات_أسهم_${c.name.replace(/\s/g, '_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-    pagebreak: { mode: 'avoid-all' }
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: 1123,
+      windowHeight: 794
+    },
+    jsPDF: { unit: 'px', format: [1123, 794], orientation: 'landscape', hotfixes: ['px_scaling'] },
+    pagebreak: { mode: ['avoid-all', 'css'] }
   };
   
   try {
@@ -457,129 +477,135 @@ async function downloadCertificates(contributionId) {
 // Create certificate HTML element
 function createCertificateHTML(contribution, ticketNumber, dateStr, index, total) {
   const div = document.createElement('div');
+  div.className = 'certificate-page';
   div.style.cssText = `
-    width: 297mm;
-    height: 210mm;
+    width: 1123px;
+    height: 794px;
     page-break-after: always;
     font-family: 'Tajawal', 'Segoe UI', sans-serif;
     direction: rtl;
     position: relative;
-    background: #ffffff;
-    padding: 0;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F0FAFA 100%);
+    padding: 60px;
     box-sizing: border-box;
     overflow: hidden;
+    border: 12px solid #1E9196;
   `;
   
   div.innerHTML = `
+    <!-- Decorative corners -->
+    <div style="position: absolute; top: 30px; right: 30px; width: 80px; height: 80px; border-top: 5px solid #0A1C33; border-right: 5px solid #0A1C33;"></div>
+    <div style="position: absolute; top: 30px; left: 30px; width: 80px; height: 80px; border-top: 5px solid #0A1C33; border-left: 5px solid #0A1C33;"></div>
+    <div style="position: absolute; bottom: 30px; right: 30px; width: 80px; height: 80px; border-bottom: 5px solid #0A1C33; border-right: 5px solid #0A1C33;"></div>
+    <div style="position: absolute; bottom: 30px; left: 30px; width: 80px; height: 80px; border-bottom: 5px solid #0A1C33; border-left: 5px solid #0A1C33;"></div>
+    
+    <!-- Watermark -->
     <div style="
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #FFFFFF 0%, #F0FAFA 100%);
-      position: relative;
-      padding: 20mm;
-      box-sizing: border-box;
-      border: 8px solid #1E9196;
-      border-radius: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 150px;
+      color: rgba(30, 145, 150, 0.05);
+      font-weight: 900;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 0;
     ">
-      <!-- Decorative corners -->
-      <div style="position: absolute; top: 15mm; right: 15mm; width: 30mm; height: 30mm; border-top: 4px solid #0A1C33; border-right: 4px solid #0A1C33;"></div>
-      <div style="position: absolute; top: 15mm; left: 15mm; width: 30mm; height: 30mm; border-top: 4px solid #0A1C33; border-left: 4px solid #0A1C33;"></div>
-      <div style="position: absolute; bottom: 15mm; right: 15mm; width: 30mm; height: 30mm; border-bottom: 4px solid #0A1C33; border-right: 4px solid #0A1C33;"></div>
-      <div style="position: absolute; bottom: 15mm; left: 15mm; width: 30mm; height: 30mm; border-bottom: 4px solid #0A1C33; border-left: 4px solid #0A1C33;"></div>
+      FLY LIGHT
+    </div>
+    
+    <!-- Content wrapper -->
+    <div style="position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column;">
       
       <!-- Header -->
-      <div style="text-align: center; margin-top: 15mm; padding-bottom: 8mm; border-bottom: 3px double #1E9196;">
+      <div style="text-align: center; padding-bottom: 25px; border-bottom: 3px double #1E9196;">
         <div style="
           display: inline-block;
           background: linear-gradient(135deg, #0A1C33 0%, #14365C 100%);
           color: white;
-          padding: 8mm 15mm;
+          padding: 18px 50px;
           border-radius: 50px;
-          font-size: 28pt;
+          font-size: 36px;
           font-weight: 900;
-          letter-spacing: 2px;
+          letter-spacing: 3px;
           box-shadow: 0 8px 20px rgba(30, 145, 150, 0.3);
         ">
           FLY LIGHT LOGISTICS
         </div>
-        <p style="font-size: 14pt; color: #6B7280; margin-top: 5mm; font-weight: 600;">
+        <p style="font-size: 18px; color: #6B7280; margin-top: 12px; font-weight: 600;">
           حلول لوجستية متكاملة وموثوقة
         </p>
       </div>
       
       <!-- Title -->
-      <div style="text-align: center; margin-top: 10mm;">
+      <div style="text-align: center; margin-top: 30px;">
         <h1 style="
-          font-size: 42pt;
+          font-size: 56px;
           color: #0A1C33;
           margin: 0;
           font-weight: 900;
-          letter-spacing: 3px;
+          letter-spacing: 4px;
         ">شهادة سهم</h1>
         <div style="
-          width: 60mm;
-          height: 4px;
+          width: 180px;
+          height: 5px;
           background: linear-gradient(135deg, #1E9196 0%, #0D6C70 100%);
-          margin: 4mm auto;
-          border-radius: 4px;
+          margin: 15px auto;
+          border-radius: 5px;
         "></div>
-        <p style="font-size: 14pt; color: #1E9196; font-weight: 700;">Share Certificate</p>
+        <p style="font-size: 18px; color: #1E9196; font-weight: 700; letter-spacing: 2px;">SHARE CERTIFICATE</p>
       </div>
       
       <!-- Body -->
-      <div style="margin-top: 12mm; padding: 0 20mm;">
-        <p style="font-size: 14pt; color: #1F2937; text-align: center; line-height: 2; margin-bottom: 8mm;">
+      <div style="margin-top: 35px; padding: 0 60px; flex: 1;">
+        <p style="font-size: 20px; color: #1F2937; text-align: center; line-height: 1.8; margin: 0 0 25px 0;">
           تشهد شركة <strong style="color: #1E9196;">Fly Light Logistics Solutions</strong> بأن:
         </p>
         
         <div style="
           background: rgba(30, 145, 150, 0.08);
-          border-right: 5px solid #1E9196;
-          padding: 8mm 10mm;
+          border-right: 6px solid #1E9196;
+          padding: 25px 30px;
           border-radius: 12px;
-          margin-bottom: 8mm;
+          margin-bottom: 25px;
         ">
-          <table style="width: 100%; border-collapse: collapse; font-size: 13pt;">
-            <tr>
-              <td style="padding: 3mm 5mm; font-weight: 700; color: #0A1C33; width: 30%;">الاسم:</td>
-              <td style="padding: 3mm 5mm; color: #1F2937; font-weight: 600;">${contribution.name}</td>
-            </tr>
-            <tr>
-              <td style="padding: 3mm 5mm; font-weight: 700; color: #0A1C33;">رقم الهاتف:</td>
-              <td style="padding: 3mm 5mm; color: #1F2937; direction: ltr; text-align: right;">${contribution.phone}</td>
-            </tr>
-            <tr>
-              <td style="padding: 3mm 5mm; font-weight: 700; color: #0A1C33;">التاريخ:</td>
-              <td style="padding: 3mm 5mm; color: #1F2937;">${dateStr}</td>
-            </tr>
-          </table>
+          <div style="display: flex; padding: 8px 0; border-bottom: 1px solid rgba(30, 145, 150, 0.1);">
+            <div style="width: 30%; font-weight: 700; color: #0A1C33; font-size: 18px;">الاسم:</div>
+            <div style="flex: 1; color: #1F2937; font-weight: 600; font-size: 18px;">${contribution.name}</div>
+          </div>
+          <div style="display: flex; padding: 8px 0; border-bottom: 1px solid rgba(30, 145, 150, 0.1);">
+            <div style="width: 30%; font-weight: 700; color: #0A1C33; font-size: 18px;">رقم الهاتف:</div>
+            <div style="flex: 1; color: #1F2937; direction: ltr; text-align: right; font-size: 18px;">${contribution.phone}</div>
+          </div>
+          <div style="display: flex; padding: 8px 0;">
+            <div style="width: 30%; font-weight: 700; color: #0A1C33; font-size: 18px;">التاريخ:</div>
+            <div style="flex: 1; color: #1F2937; font-size: 18px;">${dateStr}</div>
+          </div>
         </div>
         
-        <p style="font-size: 13pt; color: #1F2937; text-align: center; line-height: 2;">
-          يملك <strong style="color: #1E9196; font-size: 16pt;">سهماً واحداً</strong> من أسهم رأسمال الشركة،
+        <p style="font-size: 18px; color: #1F2937; text-align: center; line-height: 1.9; margin: 0;">
+          يملك <strong style="color: #1E9196; font-size: 22px;">سهماً واحداً</strong> من أسهم رأسمال الشركة،
           <br>
-          بقيمة اسمية تبلغ <strong style="color: #1E9196; font-size: 16pt;">(٥٠) خمسون ريالاً سعودياً</strong> فقط لا غير.
+          بقيمة اسمية تبلغ <strong style="color: #1E9196; font-size: 22px;">(٥٠) خمسون ريالاً سعودياً</strong> فقط لا غير.
         </p>
       </div>
       
-      <!-- Ticket Number & Footer -->
+      <!-- Footer -->
       <div style="
-        position: absolute;
-        bottom: 25mm;
-        right: 25mm;
-        left: 25mm;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
+        padding-top: 30px;
       ">
         <div style="text-align: center;">
-          <p style="font-size: 10pt; color: #6B7280; margin-bottom: 2mm;">رقم التذكرة</p>
+          <p style="font-size: 13px; color: #6B7280; margin: 0 0 8px 0;">رقم التذكرة</p>
           <div style="
             background: linear-gradient(135deg, #1E9196 0%, #0D6C70 100%);
             color: white;
-            padding: 4mm 10mm;
+            padding: 12px 28px;
             border-radius: 50px;
-            font-size: 14pt;
+            font-size: 18px;
             font-weight: 800;
             letter-spacing: 2px;
             direction: ltr;
@@ -590,34 +616,19 @@ function createCertificateHTML(contribution, ticketNumber, dateStr, index, total
         </div>
         
         <div style="text-align: center;">
-          <p style="font-size: 10pt; color: #6B7280;">السهم رقم</p>
-          <p style="font-size: 24pt; font-weight: 900; color: #0A1C33; margin: 0;">${index} / ${total}</p>
+          <p style="font-size: 13px; color: #6B7280; margin: 0 0 5px 0;">السهم رقم</p>
+          <p style="font-size: 36px; font-weight: 900; color: #0A1C33; margin: 0;">${index} / ${total}</p>
         </div>
         
         <div style="text-align: center;">
           <div style="
-            width: 50mm;
-            height: 20mm;
-            border-bottom: 2px solid #0A1C33;
-            margin-bottom: 2mm;
+            width: 180px;
+            height: 60px;
+            border-bottom: 3px solid #0A1C33;
+            margin-bottom: 8px;
           "></div>
-          <p style="font-size: 11pt; color: #1F2937; font-weight: 700;">توقيع الإدارة المالية</p>
+          <p style="font-size: 14px; color: #1F2937; font-weight: 700; margin: 0;">توقيع الإدارة المالية</p>
         </div>
-      </div>
-      
-      <!-- Watermark -->
-      <div style="
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-30deg);
-        font-size: 80pt;
-        color: rgba(30, 145, 150, 0.04);
-        font-weight: 900;
-        pointer-events: none;
-        white-space: nowrap;
-      ">
-        FLY LIGHT
       </div>
     </div>
   `;
