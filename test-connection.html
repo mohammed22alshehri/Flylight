@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Supabase Connection Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family: Arial; padding: 20px; background: #0A1C33; color: white;">
+    <h1>🔍 Supabase Connection Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testConnection() {
+            results.innerHTML = '<p>⏳ Testing connection...</p>';
+            
+            // Replace these with your actual values
+            const SUPABASE_URL = 'PLACEHOLDER_SUPABASE_URL';
+            const SUPABASE_KEY = 'PLACEHOLDER_SUPABASE_ANON_KEY';
+            
+            if (SUPABASE_URL.includes('PLACEHOLDER')) {
+                results.innerHTML = '<p style="color: red;">❌ ERROR: Secrets not replaced!</p>';
+                return;
+            }
+            
+            try {
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                
+                // Test 1: Simple select
+                results.innerHTML += '<p>Test 1: Simple select...</p>';
+                const { data: test1, error: error1 } = await supabase
+                    .from('contributions')
+                    .select('id')
+                    .limit(1);
+                
+                if (error1) {
+                    results.innerHTML += `<p style="color: red;">❌ Test 1 Failed: ${error1.message}</p>`;
+                } else {
+                    results.innerHTML += '<p style="color: green;">✅ Test 1 Passed!</p>';
+                }
+                
+                // Test 2: Count
+                results.innerHTML += '<p>Test 2: Count query...</p>';
+                const { count, error: error2 } = await supabase
+                    .from('contributions')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (error2) {
+                    results.innerHTML += `<p style="color: red;">❌ Test 2 Failed: ${error2.message}</p>`;
+                } else {
+                    results.innerHTML += `<p style="color: green;">✅ Test 2 Passed! Count: ${count}</p>`;
+                }
+                
+                // Test 3: Full data
+                results.innerHTML += '<p>Test 3: Fetch all data...</p>';
+                const { data: test3, error: error3 } = await supabase
+                    .from('contributions')
+                    .select('*');
+                
+                if (error3) {
+                    results.innerHTML += `<p style="color: red;">❌ Test 3 Failed: ${error3.message}</p>`;
+                } else {
+                    results.innerHTML += `<p style="color: green;">✅ Test 3 Passed! Records: ${test3.length}</p>`;
+                }
+                
+                results.innerHTML += '<hr><p style="color: lime; font-size: 20px;">🎉 ALL TESTS COMPLETED!</p>';
+                
+            } catch (error) {
+                results.innerHTML += `<p style="color: red;">❌ Fatal Error: ${error.message}</p>`;
+            }
+        }
+        
+        testConnection();
+    </script>
+</body>
+</html>
