@@ -1,25 +1,17 @@
-// ===== Supabase Secure Configuration =====
-// This file uses PLACEHOLDER values that will be replaced by GitHub Actions
-// with actual secrets from GitHub Secrets during deployment
+// ===== Supabase Configuration =====
+// Publishable key is safe to use in browser (RLS is enabled)
 
 let supabaseClient = null;
 
-// Function to initialize Supabase safely
+// Function to initialize Supabase
 async function initSupabase() {
   if (supabaseClient) return supabaseClient;
   
-  // These placeholders will be replaced by GitHub Actions workflow
-  const SUPABASE_URL = 'PLACEHOLDER_SUPABASE_URL';
-  const SUPABASE_ANON_KEY = 'PLACEHOLDER_SUPABASE_ANON_KEY';
+  // Direct configuration (publishable key is safe for browser use with RLS enabled)
+  const SUPABASE_URL = 'https://cqvgwndejcqheojsanlk.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_0_Zgt0LPralL3mkOQ7pqiA_0-SIYLDS';
   
-  // Check if placeholders were replaced
-  if (SUPABASE_URL.includes('PLACEHOLDER') || SUPABASE_ANON_KEY.includes('PLACEHOLDER')) {
-    console.warn('⚠️ تحذير: مفاتيح Supabase لم يتم تحديثها. تأكد من إعدادات الـ GitHub Actions.');
-    showToast('خطأ في الاتصال بقاعدة البيانات', 'error');
-    return null;
-  }
-  
-  // Create Supabase client with the provided keys
+  // Create Supabase client
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
   // Test connection
@@ -63,7 +55,7 @@ async function dbGetAllContributions() {
   }
 }
 
-// Insert new contribution (only pending, not approved)
+// Insert new contribution
 async function dbInsertContribution(contribution) {
   const client = await initSupabase();
   if (!client) return null;
@@ -100,13 +92,13 @@ async function dbInsertContribution(contribution) {
   }
 }
 
-// Update contribution status (approve or reject)
+// Update contribution status
 async function dbUpdateContributionStatus(id, newStatus) {
   const client = await initSupabase();
   if (!client) return false;
   
   try {
-    // If rejecting, delete the contribution
+    // If rejecting, delete
     if (newStatus === 'مرفوض') {
       const { error } = await client
         .from('contributions')
@@ -114,16 +106,15 @@ async function dbUpdateContributionStatus(id, newStatus) {
         .eq('id', id);
       
       if (error) {
-        console.error('Error deleting contribution:', error);
+        console.error('Error deleting:', error);
         showToast('خطأ في حذف المساهمة', 'error');
         return false;
       }
-      
       console.log('✅ Contribution rejected and deleted');
       return true;
     }
     
-    // If approving, update status
+    // If approving, update
     const { error } = await client
       .from('contributions')
       .update({
@@ -134,16 +125,14 @@ async function dbUpdateContributionStatus(id, newStatus) {
       .eq('id', id);
     
     if (error) {
-      console.error('Error updating status:', error);
+      console.error('Error updating:', error);
       showToast('خطأ في تحديث الحالة', 'error');
       return false;
     }
-    
-    console.log('✅ Contribution status updated to:', newStatus);
+    console.log('✅ Status updated to:', newStatus);
     return true;
   } catch (error) {
     console.error('Update error:', error);
-    showToast('فشل تحديث الحالة', 'error');
     return false;
   }
 }
@@ -158,21 +147,16 @@ async function dbGetStatistics() {
       .from('contributions')
       .select('status, amount');
     
-    if (error) {
-      console.error('Error fetching statistics:', error);
-      return { total: 0, approved: 0, pending: 0 };
-    }
+    if (error) return { total: 0, approved: 0, pending: 0 };
     
-    const stats = {
+    return {
       total: data?.length || 0,
       approved: data?.filter(c => c.status === 'تمت الموافقة').length || 0,
       pending: data?.filter(c => c.status === 'قيد المراجعة').length || 0,
-      approvedAmount: data?.filter(c => c.status === 'تمت الموافقة').reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0) || 0
+      approvedAmount: data?.filter(c => c.status === 'تمت الموافقة')
+        .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0) || 0
     };
-    
-    return stats;
   } catch (error) {
-    console.error('Statistics error:', error);
     return { total: 0, approved: 0, pending: 0 };
   }
 }
