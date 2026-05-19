@@ -14,7 +14,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     
-    # ✅ CRITICAL FIX: environment INSIDE the job
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -23,50 +22,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # ✅ استخدام أسماء الـ secrets الفعلية عندك
       - name: Inject Secrets into Files
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
         run: |
-          echo "🔐 Injecting secure configuration..."
-          
-          # تحديث supabase.js
-          if [ -f "supabase.js" ]; then
-            sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase.js
-            sed -i "s|PLACEHOLDER_SUPABASE_KEY|${SUPABASE_KEY}|g" supabase.js
-            echo "✅ supabase.js configured"
-          fi
-          
-          # تحديث script.js
-          if [ -f "script.js" ]; then
-            sed -i "s|PLACEHOLDER_ADMIN_PASS|${ADMIN_PASS}|g" script.js
-            echo "✅ script.js configured"
-          fi
-          
-          echo "✅ All secrets injected successfully"
+          echo "🔐 Injecting secrets..."
+          sed -i "s|PLACEHOLDER_SUPABASE_URL|${SUPABASE_URL}|g" supabase.js
+          sed -i "s|PLACEHOLDER_SUPABASE_KEY|${SUPABASE_KEY}|g" supabase.js
+          sed -i "s|PLACEHOLDER_ADMIN_PASS|${ADMIN_PASS}|g" script.js
+          echo "✅ Secrets injected successfully"
       
       - name: Verify No Placeholders Remain
         run: |
-          echo "🔍 Verifying configuration..."
-          
+          echo "🔍 Verifying..."
           if grep -r "PLACEHOLDER_SUPABASE_URL" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
             echo "❌ ERROR: SUPABASE_URL placeholder still present!"
             exit 1
           fi
-          
           if grep -r "PLACEHOLDER_SUPABASE_KEY" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
             echo "❌ ERROR: SUPABASE_KEY placeholder still present!"
             exit 1
           fi
-          
           if grep -r "PLACEHOLDER_ADMIN_PASS" . --include="*.js" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
             echo "❌ ERROR: ADMIN_PASS placeholder still present!"
             exit 1
           fi
-          
-          echo "✅ Configuration verified - all placeholders replaced"
+          echo "✅ All placeholders verified and replaced"
       
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
@@ -99,26 +82,21 @@ jobs:
       
       - name: Security Verification
         run: |
-          echo "🔐 Running security verification..."
-          echo ""
-          
+          echo "🔐 Running security check..."
           FOUND_ISSUES=0
           
-          # Check for placeholders
           if grep -r "PLACEHOLDER_SUPABASE" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "⚠️  WARNING: PLACEHOLDER values found in code"
+            echo "⚠️  WARNING: PLACEHOLDER values found"
             FOUND_ISSUES=1
           fi
           
-          # Check for hardcoded URLs
           if grep -r "https://.*\.supabase\.co" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "PLACEHOLDER"; then
             echo "⚠️  WARNING: Real Supabase URL found"
             FOUND_ISSUES=1
           fi
           
-          # Check for JWT tokens
           if grep -r "eyJ" . --include="*.js" --include="*.html" --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-            echo "⚠️  WARNING: Potential secret key pattern found"
+            echo "⚠️  WARNING: Potential secret pattern found"
             FOUND_ISSUES=1
           fi
           
@@ -127,5 +105,5 @@ jobs:
             echo "✅ Security check PASSED"
             echo "✅ No hardcoded secrets found"
           else
-            echo "⚠️  Review security warnings above"
+            echo "⚠️  Review warnings above"
           fi
