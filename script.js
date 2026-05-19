@@ -336,9 +336,38 @@ async function viewDetails(id) {
   if (!selectedContribution) return;
   
   const c = selectedContribution;
-  const receiptHTML = c.receipt
-    ? `<img src="${c.receipt}" class="receipt-image" alt="إيصال" style="max-width: 100%; border-radius: 8px; margin-top: 1rem;">`
-    : '<p style="color: #6B7280;">لم يتم العثور على الإيصال</p>';
+  
+  // Determine receipt type (image or PDF)
+  let receiptHTML = '<p style="color: #6B7280;">لم يتم العثور على الإيصال</p>';
+  if (c.receipt) {
+    const isPDF = c.receipt.startsWith('data:application/pdf') || 
+                  (c.receipt_name && c.receipt_name.toLowerCase().endsWith('.pdf'));
+    
+    if (isPDF) {
+      receiptHTML = `
+        <div style="border: 2px solid #1E9196; border-radius: 12px; overflow: hidden; margin-top: 1rem; background: #f8fafc;">
+          <iframe src="${c.receipt}" 
+                  style="width: 100%; height: 500px; border: none;"
+                  title="إيصال PDF"></iframe>
+          <div style="padding: 0.8rem; text-align: center; background: white; border-top: 1px solid #E5E7EB;">
+            <a href="${c.receipt}" download="${c.receipt_name || 'receipt.pdf'}" 
+               style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; background: #1E9196; color: white; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 14px;">
+              📥 تحميل PDF
+            </a>
+          </div>
+        </div>`;
+    } else {
+      receiptHTML = `
+        <div style="margin-top: 1rem;">
+          <img src="${c.receipt}" 
+               class="receipt-image" 
+               alt="إيصال" 
+               style="max-width: 100%; border-radius: 12px; border: 2px solid #E5E7EB; cursor: zoom-in;"
+               onclick="window.open('${c.receipt}', '_blank')">
+          <p style="text-align: center; margin-top: 0.5rem; font-size: 13px; color: #6B7280;">انقر على الصورة للتكبير</p>
+        </div>`;
+    }
+  }
   
   document.getElementById('modalBody').innerHTML = `
     <table class="info-table">
