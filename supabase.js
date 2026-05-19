@@ -24,7 +24,7 @@ async function initSupabase() {
   
   // Test connection
   try {
-    const { error } = await supabaseClient.from('contributions').select('count()', { count: 'exact' }).limit(1);
+    const { error } = await supabaseClient.from('contributions').select('id').limit(1);
     if (error) {
       console.error('❌ Supabase connection failed:', error);
       showToast('لا يمكن الاتصال بقاعدة البيانات', 'error');
@@ -76,10 +76,10 @@ async function dbInsertContribution(contribution) {
         phone: contribution.phone,
         email: contribution.email,
         amount: contribution.amount,
-        receipt_base64: contribution.receipt, // Store base64 receipt
+        receipt: contribution.receipt,
         receipt_name: contribution.receiptName,
         notes: contribution.notes,
-        status: 'قيد المراجعة', // Initially pending
+        status: 'قيد المراجعة',
         created_at: new Date().toISOString()
       }])
       .select()
@@ -167,51 +167,13 @@ async function dbGetStatistics() {
       total: data?.length || 0,
       approved: data?.filter(c => c.status === 'تمت الموافقة').length || 0,
       pending: data?.filter(c => c.status === 'قيد المراجعة').length || 0,
-      // IMPORTANT FIX: Only sum APPROVED contributions
-      approvedAmount: data?.filter(c => c.status === 'تمت الموافقة').reduce((sum, c) => sum + (c.amount || 0), 0) || 0
+      approvedAmount: data?.filter(c => c.status === 'تمت الموافقة').reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0) || 0
     };
     
     return stats;
   } catch (error) {
     console.error('Statistics error:', error);
     return { total: 0, approved: 0, pending: 0 };
-  }
-}
-
-// Verify data integrity
-async function dbVerifyIntegrity() {
-  const client = await initSupabase();
-  if (!client) return false;
-  
-  try {
-    // Test write
-    const testData = {
-      name: 'Test User',
-      email: 'test@example.com',
-      phone: '+966500000000',
-      amount: 50,
-      status: 'اختبار'
-    };
-    
-    const { data, error } = await client
-      .from('contributions')
-      .insert([testData])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Integrity check failed:', error);
-      return false;
-    }
-    
-    // Delete test data
-    await client.from('contributions').delete().eq('id', data.id);
-    
-    console.log('✅ Database integrity verified');
-    return true;
-  } catch (error) {
-    console.error('Integrity error:', error);
-    return false;
   }
 }
 
