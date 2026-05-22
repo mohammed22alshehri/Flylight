@@ -93,11 +93,11 @@ function adminLogin() {
     document.getElementById('adminPassword').value = '';
     errorEl.style.display = 'none';
     checkAdminSession();
-    showToast('✅ تم تسجيل الدخول بنجاح', 'success');
+    showToast('تم تسجيل الدخول بنجاح', 'success');
   } else {
     errorEl.style.display = 'block';
     document.getElementById('adminPassword').value = '';
-    showToast('❌ كلمة المرور غير صحيحة', 'error');
+    showToast('كلمة المرور غير صحيحة', 'error');
   }
 }
 
@@ -151,7 +151,7 @@ function setupFileUpload() {
   });
   
   function showFileName(file) {
-    filePreview.innerHTML = `<span style="font-size:20px">✓</span><span>${file.name}</span><span style="color:#6B7280">(${formatFileSize(file.size)})</span>`;
+    filePreview.innerHTML = `<span style="display:flex;align-items:center">${svgIcon('check','18')}</span><span>${file.name}</span><span style="color:#6B7280">(${formatFileSize(file.size)})</span>`;
     filePreview.classList.add('active');
   }
   
@@ -232,7 +232,7 @@ function setupForm() {
           document.getElementById('successMsg').style.display = 'none';
         }, 5000);
         
-        showToast('✅ تم تقديم مساهمتك بنجاح', 'success');
+        showToast('تم تقديم مساهمتك بنجاح', 'success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -242,15 +242,14 @@ function setupForm() {
 
 // ===== Copy IBAN =====
 function copyIBAN() {
-  const iban = 'SA08 8000 0868 6080 1621 4271';
+  const iban = 'SA0880000868608016214271';
   navigator.clipboard.writeText(iban).then(() => {
     const btn = document.querySelector('.btn-copy');
-    const originalText = btn.textContent;
-    btn.textContent = '✓ تم النسخ';
+    const original = btn.innerHTML;
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> تم النسخ';
     btn.style.background = 'rgba(255,255,255,0.4)';
-    
     setTimeout(() => {
-      btn.textContent = originalText;
+      btn.innerHTML = original;
       btn.style.background = 'rgba(255,255,255,0.2)';
     }, 2000);
   });
@@ -286,10 +285,10 @@ async function loadDashboard() {
       <td>${getStatusBadge(c.status)}</td>
       <td>
         <div class="action-buttons">
-          <button class="action-btn" onclick="viewDetails(${c.id})">👁 عرض</button>
+          <button class="action-btn" onclick="viewDetails(${c.id})">${svgIcon('eye','14')} عرض</button>
           ${c.status === 'قيد المراجعة' ? `
-            <button class="action-btn btn-approve" onclick="approveContribution(${c.id})">✓ موافقة</button>
-            <button class="action-btn btn-reject" onclick="rejectContribution(${c.id})">✗ رفض</button>
+            <button class="action-btn btn-approve" onclick="approveContribution(${c.id})">${svgIcon('check','14')} موافقة</button>
+            <button class="action-btn btn-reject" onclick="rejectContribution(${c.id})">${svgIcon('x','14')} رفض</button>
           ` : ''}
         </div>
       </td>
@@ -297,11 +296,26 @@ async function loadDashboard() {
   `).join('');
 }
 
+const SVG_ICONS = {
+  clock:   '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  check:   '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  x:       '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+};
+
+function svgIcon(name, size = '14') {
+  const paths = {
+    eye:   '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    check: '<polyline points="20 6 9 17 4 12"/>',
+    x:     '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  };
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;flex-shrink:0">${paths[name]||''}</svg>`;
+}
+
 function getStatusBadge(status) {
   const badges = {
-    'قيد المراجعة': { class: 'badge-pending', icon: '⏳' },
-    'تمت الموافقة': { class: 'badge-approved', icon: '✅' },
-    'مرفوض': { class: 'badge-rejected', icon: '❌' }
+    'قيد المراجعة': { class: 'badge-pending',  icon: SVG_ICONS.clock },
+    'تمت الموافقة': { class: 'badge-approved', icon: SVG_ICONS.check },
+    'مرفوض':        { class: 'badge-rejected', icon: SVG_ICONS.x },
   };
   const badge = badges[status] || badges['قيد المراجعة'];
   return `<span class="badge ${badge.class}">${badge.icon} ${status}</span>`;
@@ -313,7 +327,7 @@ async function approveContribution(id) {
     const success = await dbUpdateContributionStatus(id, 'تمت الموافقة');
     if (success) {
       loadDashboard();
-      showToast('✅ تمت الموافقة على المساهمة', 'success');
+      showToast('تمت الموافقة على المساهمة', 'success');
     }
   }
 }
@@ -324,7 +338,7 @@ async function rejectContribution(id) {
     const success = await dbUpdateContributionStatus(id, 'مرفوض');
     if (success) {
       loadDashboard();
-      showToast('✗ تم رفض المساهمة وحذفها', 'success');
+      showToast('تم رفض المساهمة', 'error');
     }
   }
 }
@@ -389,14 +403,15 @@ async function viewDetails(id) {
     </div>
     ${c.status === 'قيد المراجعة' ? `
       <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-        <button class="btn btn-approve-full" onclick="approveContribution(${c.id}); closeModal()">✓ موافقة</button>
-        <button class="btn btn-reject-full" onclick="rejectContribution(${c.id}); closeModal()">✗ رفض</button>
+        <button class="btn btn-approve-full" onclick="approveContribution(${c.id}); closeModal()">${svgIcon('check','16')} موافقة</button>
+        <button class="btn btn-reject-full" onclick="rejectContribution(${c.id}); closeModal()">${svgIcon('x','16')} رفض</button>
       </div>
     ` : ''}
     ${c.status === 'تمت الموافقة' ? `
       <div style="margin-top: 1.5rem;">
         <button class="btn btn-approve-full" onclick="downloadCertificates(${c.id})" style="width: 100%;">
-          📜 تحميل شهادات الأسهم (${Math.floor(parseFloat(c.amount) / 50)} شهادة)
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          تحميل شهادات الأسهم (${Math.floor(parseFloat(c.amount) / 50)} شهادة)
         </button>
       </div>
     ` : ''}
@@ -465,7 +480,7 @@ async function downloadCertificates(contributionId) {
   
   try {
     await html2pdf().set(opt).from(container).save();
-    showToast('✅ تم تحميل الشهادات بنجاح', 'success');
+    showToast('تم تحميل الشهادات بنجاح', 'success');
   } catch (error) {
     console.error('PDF generation error:', error);
     showToast('خطأ في إنشاء PDF', 'error');
