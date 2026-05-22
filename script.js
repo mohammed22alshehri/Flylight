@@ -422,6 +422,26 @@ async function viewDetails(id) {
 }
 
 // ===== Download Share Certificates =====
+let _certTemplateImg = null;
+
+async function loadCertificateTemplate() {
+  if (_certTemplateImg) return _certTemplateImg;
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      _certTemplateImg = canvas.toDataURL('image/png');
+      resolve(_certTemplateImg);
+    };
+    img.onerror = () => reject(new Error('فشل تحميل قالب الشهادة'));
+    img.src = 'certificate_template.png';
+  });
+}
+
 async function downloadCertificates(contributionId) {
   const contributions = await dbGetAllContributions();
   const c = contributions.find(x => x.id === contributionId);
@@ -429,55 +449,50 @@ async function downloadCertificates(contributionId) {
     showToast('لم يتم العثور على المساهمة', 'error');
     return;
   }
-  
+
   const numShares = Math.floor(parseFloat(c.amount) / 50);
-  const contributionDate = c.created_at 
+  const contributionDate = c.created_at
     ? new Date(c.created_at).toLocaleDateString('ar-SA')
     : (c.date || new Date().toLocaleDateString('ar-SA'));
-  
-  showToast(`جاري إنشاء ${numShares} شهادة...`, 'success');
-  
-  // Create container - visible but off-screen so html2canvas can render it
+
+  showToast('جاري إنشاء الشهادات...', 'success');
+
+  let templateSrc;
+  try {
+    templateSrc = await loadCertificateTemplate();
+  } catch {
+    showToast('فشل تحميل قالب الشهادة', 'error');
+    return;
+  }
+
   const container = document.createElement('div');
   container.id = 'certificates-container';
-  container.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 1123px;
-    background: white;
-    z-index: -1;
-    opacity: 0;
-    pointer-events: none;
-  `;
-  
+  container.style.cssText = 'position:fixed;top:0;left:0;width:1897px;z-index:-1;opacity:0;pointer-events:none;';
+
   for (let i = 1; i <= numShares; i++) {
-    const ticketNumber = `FL-${String(c.id).padStart(4, '0')}-${String(i).padStart(3, '0')}`;
-    container.appendChild(createCertificateHTML(c, ticketNumber, contributionDate, i, numShares));
+    const ticketNum = `FL-${String(c.id).padStart(4, '0')}-${String(i).padStart(3, '0')}`;
+    container.appendChild(createCertificateHTML(c, ticketNum, contributionDate, i, numShares, templateSrc));
   }
-  
+
   document.body.appendChild(container);
-  
-  // Wait for fonts and rendering
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Generate PDF
+  await new Promise(r => setTimeout(r, 600));
+
   const opt = {
     margin: 0,
-    filename: `شهادات_أسهم_${c.name.replace(/\s/g, '_')}.pdf`,
+    filename: `كتيب_اسهم_${c.name.replace(/\s/g, '_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true, 
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
-      windowWidth: 1123,
-      windowHeight: 794
+      windowWidth: 1897,
+      windowHeight: 794,
     },
-    jsPDF: { unit: 'px', format: [1123, 794], orientation: 'landscape', hotfixes: ['px_scaling'] },
-    pagebreak: { mode: ['avoid-all', 'css'] }
+    jsPDF: { unit: 'px', format: [1897, 794], orientation: 'landscape', hotfixes: ['px_scaling'] },
+    pagebreak: { mode: ['avoid-all', 'css'] },
   };
-  
+
   try {
     await html2pdf().set(opt).from(container).save();
     showToast('تم تحميل الشهادات بنجاح', 'success');
@@ -489,165 +504,65 @@ async function downloadCertificates(contributionId) {
   }
 }
 
-// Create certificate HTML element
-function createCertificateHTML(contribution, ticketNumber, dateStr, index, total) {
+function createCertificateHTML(contribution, ticketNumber, dateStr, index, total, templateSrc) {
+  const COMPANY_NAME   = 'Fly Light Logistics';
+  const COMPANY_CODE   = 'FLLS';
+  const COMPANY_CITY   = 'الرياض';
+
+  const W = 1897, H = 794;
+
+  function field(left, top, width, text, opts = {}) {
+    const sz   = opts.size   || 16;
+    const clr  = opts.color  || '#1a1a1a';
+    const bold = opts.bold   ? 'font-weight:800;' : 'font-weight:600;';
+    const dir  = opts.ltr    ? 'direction:ltr;text-align:left;' : '';
+    const extra = opts.extra || '';
+    return `<div style="position:absolute;left:${left}px;top:${top}px;width:${width}px;
+      font-size:${sz}px;color:${clr};${bold}${dir}${extra}
+      font-family:'Tajawal',sans-serif;white-space:nowrap;line-height:1.3;">${text}</div>`;
+  }
+
   const div = document.createElement('div');
   div.className = 'certificate-page';
   div.style.cssText = `
-    width: 1123px;
-    height: 794px;
-    page-break-after: always;
-    font-family: 'Tajawal', 'Segoe UI', sans-serif;
-    direction: rtl;
-    position: relative;
-    background: linear-gradient(135deg, #FFFFFF 0%, #F0FAFA 100%);
-    padding: 60px;
-    box-sizing: border-box;
-    overflow: hidden;
-    border: 12px solid #1E9196;
+    width:${W}px;height:${H}px;page-break-after:always;
+    position:relative;overflow:hidden;box-sizing:border-box;
+    background:url('${templateSrc}') center/cover no-repeat;
+    font-family:'Tajawal','Segoe UI',sans-serif;direction:rtl;
   `;
-  
-  div.innerHTML = `
-    <!-- Decorative corners -->
-    <div style="position: absolute; top: 30px; right: 30px; width: 80px; height: 80px; border-top: 5px solid #0A1C33; border-right: 5px solid #0A1C33;"></div>
-    <div style="position: absolute; top: 30px; left: 30px; width: 80px; height: 80px; border-top: 5px solid #0A1C33; border-left: 5px solid #0A1C33;"></div>
-    <div style="position: absolute; bottom: 30px; right: 30px; width: 80px; height: 80px; border-bottom: 5px solid #0A1C33; border-right: 5px solid #0A1C33;"></div>
-    <div style="position: absolute; bottom: 30px; left: 30px; width: 80px; height: 80px; border-bottom: 5px solid #0A1C33; border-left: 5px solid #0A1C33;"></div>
-    
-    <!-- Watermark -->
-    <div style="
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-30deg);
-      font-size: 150px;
-      color: rgba(30, 145, 150, 0.05);
-      font-weight: 900;
-      pointer-events: none;
-      white-space: nowrap;
-      z-index: 0;
-    ">
-      FLY LIGHT
-    </div>
-    
-    <!-- Content wrapper -->
-    <div style="position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column;">
-      
-      <!-- Header -->
-      <div style="text-align: center; padding-bottom: 25px; border-bottom: 3px double #1E9196;">
-        <div style="
-          display: inline-block;
-          background: linear-gradient(135deg, #0A1C33 0%, #14365C 100%);
-          color: white;
-          padding: 18px 50px;
-          border-radius: 50px;
-          font-size: 36px;
-          font-weight: 900;
-          letter-spacing: 3px;
-          box-shadow: 0 8px 20px rgba(30, 145, 150, 0.3);
-        ">
-          FLY LIGHT LOGISTICS
-        </div>
-        <p style="font-size: 18px; color: #6B7280; margin-top: 12px; font-weight: 600;">
-          حلول لوجستية متكاملة وموثوقة
-        </p>
-      </div>
-      
-      <!-- Title -->
-      <div style="text-align: center; margin-top: 30px;">
-        <h1 style="
-          font-size: 56px;
-          color: #0A1C33;
-          margin: 0;
-          font-weight: 900;
-          letter-spacing: 4px;
-        ">شهادة سهم</h1>
-        <div style="
-          width: 180px;
-          height: 5px;
-          background: linear-gradient(135deg, #1E9196 0%, #0D6C70 100%);
-          margin: 15px auto;
-          border-radius: 5px;
-        "></div>
-        <p style="font-size: 18px; color: #1E9196; font-weight: 700; letter-spacing: 2px;">SHARE CERTIFICATE</p>
-      </div>
-      
-      <!-- Body -->
-      <div style="margin-top: 35px; padding: 0 60px; flex: 1;">
-        <p style="font-size: 20px; color: #1F2937; text-align: center; line-height: 1.8; margin: 0 0 25px 0;">
-          تشهد شركة <strong style="color: #1E9196;">Fly Light Logistics Solutions</strong> بأن:
-        </p>
-        
-        <div style="
-          background: rgba(30, 145, 150, 0.08);
-          border-right: 6px solid #1E9196;
-          padding: 25px 30px;
-          border-radius: 12px;
-          margin-bottom: 25px;
-        ">
-          <div style="display: flex; padding: 8px 0; border-bottom: 1px solid rgba(30, 145, 150, 0.1);">
-            <div style="width: 30%; font-weight: 700; color: #0A1C33; font-size: 18px;">الاسم:</div>
-            <div style="flex: 1; color: #1F2937; font-weight: 600; font-size: 18px;">${contribution.name}</div>
-          </div>
-          <div style="display: flex; padding: 8px 0; border-bottom: 1px solid rgba(30, 145, 150, 0.1);">
-            <div style="width: 30%; font-weight: 700; color: #0A1C33; font-size: 18px;">رقم الهاتف:</div>
-            <div style="flex: 1; color: #1F2937; direction: ltr; text-align: right; font-size: 18px;">${contribution.phone}</div>
-          </div>
-          <div style="display: flex; padding: 8px 0;">
-            <div style="width: 30%; font-weight: 700; color: #0A1C33; font-size: 18px;">التاريخ:</div>
-            <div style="flex: 1; color: #1F2937; font-size: 18px;">${dateStr}</div>
-          </div>
-        </div>
-        
-        <p style="font-size: 18px; color: #1F2937; text-align: center; line-height: 1.9; margin: 0;">
-          يملك <strong style="color: #1E9196; font-size: 22px;">سهماً واحداً</strong> من أسهم رأسمال الشركة،
-          <br>
-          بقيمة اسمية تبلغ <strong style="color: #1E9196; font-size: 22px;">(٥٠) خمسون ريالاً سعودياً</strong> فقط لا غير.
-        </p>
-      </div>
-      
-      <!-- Footer -->
-      <div style="
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        padding-top: 30px;
-      ">
-        <div style="text-align: center;">
-          <p style="font-size: 13px; color: #6B7280; margin: 0 0 8px 0;">رقم التذكرة</p>
-          <div style="
-            background: linear-gradient(135deg, #1E9196 0%, #0D6C70 100%);
-            color: white;
-            padding: 12px 28px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            direction: ltr;
-            box-shadow: 0 4px 15px rgba(30, 145, 150, 0.4);
-          ">
-            ${ticketNumber}
-          </div>
-        </div>
-        
-        <div style="text-align: center;">
-          <p style="font-size: 13px; color: #6B7280; margin: 0 0 5px 0;">السهم رقم</p>
-          <p style="font-size: 36px; font-weight: 900; color: #0A1C33; margin: 0;">${index} / ${total}</p>
-        </div>
-        
-        <div style="text-align: center;">
-          <div style="
-            width: 180px;
-            height: 60px;
-            border-bottom: 3px solid #0A1C33;
-            margin-bottom: 8px;
-          "></div>
-          <p style="font-size: 14px; color: #1F2937; font-weight: 700; margin: 0;">توقيع الإدارة المالية</p>
-        </div>
-      </div>
-    </div>
-  `;
-  
+
+  div.innerHTML = [
+    // === LEFT SECTION (certificate) ===
+    // اسم الشركة (header row)
+    field(440, 118, 310, COMPANY_NAME, { size: 15, bold: true, ltr: true }),
+    // رمز الشركة (header row)
+    field(85,  118, 220, COMPANY_CODE, { size: 15, bold: true, ltr: true }),
+    // التاريخ
+    field(435, 233, 270, dateStr, { size: 14 }),
+    // رقم (inside box)
+    field(228, 230, 55,  String(index), { size: 16, bold: true, extra: 'text-align:center;' }),
+    // تشهد شركة ___
+    field(570, 328, 175, COMPANY_NAME, { size: 13, bold: true, ltr: true }),
+    // الكائنة في (المدينة) ___
+    field(385, 328, 110, COMPANY_CITY, { size: 13 }),
+    // بأنّ (اسم المساهم) ___
+    field(120, 328, 220, contribution.name, { size: 13, bold: true }),
+
+    // === RIGHT SECTION (stub) ===
+    // اسم الشركة
+    field(1355, 118, 380, COMPANY_NAME, { size: 14, bold: true, ltr: true }),
+    // رمز الشركة
+    field(1355, 158, 380, COMPANY_CODE, { size: 14, bold: true, ltr: true }),
+    // رقم (box)
+    field(1478, 213, 60, String(index), { size: 15, bold: true, extra: 'text-align:center;' }),
+    // الاسم
+    field(1355, 310, 380, contribution.name, { size: 14, bold: true }),
+    // رقم الهاتف
+    field(1355, 358, 380, contribution.phone, { size: 14, ltr: true }),
+    // التاريخ
+    field(1355, 410, 380, dateStr, { size: 14 }),
+  ].join('');
+
   return div;
 }
 
