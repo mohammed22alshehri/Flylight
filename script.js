@@ -1,5 +1,6 @@
 // ===== Configuration =====
-const ADMIN_PASSWORD = 'flylight2024';
+// كلمة سر الإدارة لم تعد مخزّنة هنا — يتم التحقق منها في خادم Supabase
+// (راجع ملف admin_setup.sql لإعداد الدالة الآمنة)
 const APP_VERSION = '2.0.0';
 
 let selectedContribution = null;
@@ -84,19 +85,40 @@ function checkAdminSession() {
   if (loggedIn) loadDashboard();
 }
 
-function adminLogin() {
-  const password = document.getElementById('adminPassword').value;
+let _isLoggingIn = false;
+
+async function adminLogin() {
+  if (_isLoggingIn) return;
+  const input = document.getElementById('adminPassword');
+  const password = input.value;
   const errorEl = document.getElementById('loginError');
-  
-  if (password === ADMIN_PASSWORD) {
+  const btn = document.querySelector('#adminLogin .btn-primary');
+
+  if (!password) {
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  // حالة التحميل
+  _isLoggingIn = true;
+  const originalBtn = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري التحقق...'; }
+
+  // التحقق من كلمة السر في خادم Supabase (الكلمة لا تُخزّن في الكود)
+  const ok = await dbVerifyAdminPassword(password);
+
+  if (btn) { btn.disabled = false; btn.textContent = originalBtn; }
+  _isLoggingIn = false;
+
+  if (ok) {
     sessionStorage.setItem('adminLoggedIn', 'true');
-    document.getElementById('adminPassword').value = '';
+    input.value = '';
     errorEl.style.display = 'none';
     checkAdminSession();
     showToast('تم تسجيل الدخول بنجاح', 'success');
   } else {
     errorEl.style.display = 'block';
-    document.getElementById('adminPassword').value = '';
+    input.value = '';
     showToast('كلمة المرور غير صحيحة', 'error');
   }
 }
@@ -411,7 +433,7 @@ async function viewDetails(id) {
       <div style="margin-top: 1.5rem;">
         <button class="btn btn-approve-full" onclick="downloadCertificates(${c.id})" style="width: 100%;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          تحميل شهادات الأسهم (${Math.floor(parseFloat(c.amount) / 50)} شهادة)
+          تحميل شهادات الأسهم (${calcShares(c.amount)} شهادة)
         </button>
       </div>
     ` : ''}
@@ -422,24 +444,27 @@ async function viewDetails(id) {
 }
 
 // ===== Download Share Certificates =====
+// كل 50 ريال = شهادة سهم واحدة. يُولّد كتيب PDF يحوي شهادة لكل سهم.
+const SHARE_VALUE = 50;        // قيمة السهم الواحد بالريال
+const COMPANY_NAME = 'Fly Light Logistics';
+const COMPANY_CODE = 'FLLS';
+const COMPANY_CITY = 'الرياض';
+
 let _certTemplateImg = null;
 
-async function loadCertificateTemplate() {
-  if (_certTemplateImg) return _certTemplateImg;
+function loadCertificateTemplate() {
+  if (_certTemplateImg) return Promise.resolve(_certTemplateImg);
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      _certTemplateImg = canvas.toDataURL('image/png');
-      resolve(_certTemplateImg);
-    };
+    img.onload = () => { _certTemplateImg = img; resolve(img); };
     img.onerror = () => reject(new Error('فشل تحميل قالب الشهادة'));
     img.src = 'certificate_template.png';
   });
+}
+
+// حساب عدد الأسهم: كل 50 ريال = سهم/شهادة واحدة
+function calcShares(amount) {
+  return Math.max(1, Math.floor(parseFloat(amount || 0) / SHARE_VALUE));
 }
 
 async function downloadCertificates(contributionId) {
@@ -450,120 +475,104 @@ async function downloadCertificates(contributionId) {
     return;
   }
 
-  const numShares = Math.floor(parseFloat(c.amount) / 50);
-  const contributionDate = c.created_at
+  const numShares = calcShares(c.amount);
+  const dateStr = c.created_at
     ? new Date(c.created_at).toLocaleDateString('ar-SA')
     : (c.date || new Date().toLocaleDateString('ar-SA'));
 
-  showToast('جاري إنشاء الشهادات...', 'success');
+  showToast(`جاري إنشاء ${numShares} شهادة...`, 'success');
 
-  let templateSrc;
+  // تحميل القالب
+  let tpl;
   try {
-    templateSrc = await loadCertificateTemplate();
+    tpl = await loadCertificateTemplate();
   } catch {
-    showToast('فشل تحميل قالب الشهادة', 'error');
+    showToast('فشل تحميل قالب الشهادة — تأكد من وجود certificate_template.png', 'error');
     return;
   }
 
-  const container = document.createElement('div');
-  container.id = 'certificates-container';
-  container.style.cssText = 'position:fixed;top:0;left:0;width:1897px;z-index:-1;opacity:0;pointer-events:none;';
+  // التأكد من جاهزية خط Tajawal قبل الرسم
+  try {
+    await Promise.all([
+      document.fonts.load("700 28px Tajawal"),
+      document.fonts.load("800 30px Tajawal"),
+    ]);
+    await document.fonts.ready;
+  } catch (_) { /* تجاهل */ }
 
-  for (let i = 1; i <= numShares; i++) {
-    const ticketNum = `FL-${String(c.id).padStart(4, '0')}-${String(i).padStart(3, '0')}`;
-    container.appendChild(createCertificateHTML(c, ticketNum, contributionDate, i, numShares, templateSrc));
+  // الوصول إلى jsPDF من حزمة html2pdf
+  const JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if (!JsPDF) {
+    showToast('مكتبة PDF غير متوفرة', 'error');
+    return;
   }
 
-  document.body.appendChild(container);
-  await new Promise(r => setTimeout(r, 600));
-
-  const opt = {
-    margin: 0,
-    filename: `كتيب_اسهم_${c.name.replace(/\s/g, '_')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      windowWidth: 1897,
-      windowHeight: 794,
-    },
-    jsPDF: { unit: 'px', format: [1897, 794], orientation: 'landscape', hotfixes: ['px_scaling'] },
-    pagebreak: { mode: ['avoid-all', 'css'] },
-  };
+  const W = tpl.naturalWidth || 1897;
+  const H = tpl.naturalHeight || 794;
 
   try {
-    await html2pdf().set(opt).from(container).save();
-    showToast('تم تحميل الشهادات بنجاح', 'success');
+    const pdf = new JsPDF({ orientation: 'landscape', unit: 'px', format: [W, H] });
+
+    for (let i = 1; i <= numShares; i++) {
+      const canvas = renderCertificateCanvas(tpl, c, i, numShares, dateStr, W, H);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      if (i > 1) pdf.addPage([W, H], 'landscape');
+      pdf.addImage(imgData, 'JPEG', 0, 0, W, H);
+    }
+
+    const safeName = (c.name || 'مساهم').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
+    pdf.save(`كتيب_اسهم_${safeName}.pdf`);
+    showToast(`تم تحميل ${numShares} شهادة بنجاح`, 'success');
   } catch (error) {
     console.error('PDF generation error:', error);
     showToast('خطأ في إنشاء PDF', 'error');
-  } finally {
-    document.body.removeChild(container);
   }
 }
 
-function createCertificateHTML(contribution, ticketNumber, dateStr, index, total, templateSrc) {
-  const COMPANY_NAME   = 'Fly Light Logistics';
-  const COMPANY_CODE   = 'FLLS';
-  const COMPANY_CITY   = 'الرياض';
+// رسم شهادة واحدة على canvas فوق صورة القالب
+function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
 
-  const W = 1897, H = 794;
+  // خلفية القالب
+  ctx.drawImage(tpl, 0, 0, W, H);
 
-  function field(left, top, width, text, opts = {}) {
-    const sz   = opts.size   || 16;
-    const clr  = opts.color  || '#1a1a1a';
-    const bold = opts.bold   ? 'font-weight:800;' : 'font-weight:600;';
-    const dir  = opts.ltr    ? 'direction:ltr;text-align:left;' : '';
-    const extra = opts.extra || '';
-    return `<div style="position:absolute;left:${left}px;top:${top}px;width:${width}px;
-      font-size:${sz}px;color:${clr};${bold}${dir}${extra}
-      font-family:'Tajawal',sans-serif;white-space:nowrap;line-height:1.3;">${text}</div>`;
+  const INK = '#16243f'; // كحلي غامق يطابق نصوص القالب
+  ctx.textBaseline = 'middle';
+
+  function put(x, y, text, opts = {}) {
+    const size = opts.size || 24;
+    const weight = opts.weight || 700;
+    const align = opts.align || 'right';
+    const maxW = opts.maxW || 0;
+    ctx.fillStyle = opts.color || INK;
+    ctx.font = `${weight} ${size}px Tajawal, 'Segoe UI', sans-serif`;
+    ctx.textAlign = align;
+    ctx.direction = opts.ltr ? 'ltr' : 'rtl';
+    if (maxW) ctx.fillText(String(text), x, y, maxW);
+    else ctx.fillText(String(text), x, y);
   }
 
-  const div = document.createElement('div');
-  div.className = 'certificate-page';
-  div.style.cssText = `
-    width:${W}px;height:${H}px;page-break-after:always;
-    position:relative;overflow:hidden;box-sizing:border-box;
-    background:url('${templateSrc}') center/cover no-repeat;
-    font-family:'Tajawal','Segoe UI',sans-serif;direction:rtl;
-  `;
+  // ===== الجزء الأيسر (الشهادة) =====
+  put(1135, 273, COMPANY_NAME, { size: 23, ltr: true, maxW: 260 }); // اسم الشركة (header)
+  put(280, 273, COMPANY_CODE, { size: 21, ltr: true, maxW: 140 });  // رمز الشركة (header)
+  put(1140, 388, dateStr, { size: 23, maxW: 270 });                 // التاريخ
+  put(270, 383, index, { size: 30, weight: 800, align: 'center', maxW: 120 }); // رقم السهم (مربع)
+  put(1100, 490, COMPANY_NAME, { size: 18, ltr: true, maxW: 215 }); // تشهد شركة ___
+  put(680, 490, COMPANY_CITY, { size: 18, maxW: 160 });             // الكائنة في (المدينة) ___
+  put(285, 490, c.name, { size: 16, maxW: 200 });                   // بأنّ (اسم المساهم) ___
 
-  div.innerHTML = [
-    // === LEFT SECTION (certificate) ===
-    // اسم الشركة (header row)
-    field(440, 118, 310, COMPANY_NAME, { size: 15, bold: true, ltr: true }),
-    // رمز الشركة (header row)
-    field(85,  118, 220, COMPANY_CODE, { size: 15, bold: true, ltr: true }),
-    // التاريخ
-    field(435, 233, 270, dateStr, { size: 14 }),
-    // رقم (inside box)
-    field(228, 230, 55,  String(index), { size: 16, bold: true, extra: 'text-align:center;' }),
-    // تشهد شركة ___
-    field(570, 328, 175, COMPANY_NAME, { size: 13, bold: true, ltr: true }),
-    // الكائنة في (المدينة) ___
-    field(385, 328, 110, COMPANY_CITY, { size: 13 }),
-    // بأنّ (اسم المساهم) ___
-    field(120, 328, 220, contribution.name, { size: 13, bold: true }),
+  // ===== الجزء الأيمن (الكعب/المعلومات) =====
+  put(1595, 272, COMPANY_NAME, { size: 23, ltr: true, maxW: 250 }); // اسم الشركة
+  put(1630, 327, COMPANY_CODE, { size: 23, ltr: true, maxW: 280 }); // رمز الشركة
+  put(1550, 378, index, { size: 30, weight: 800, align: 'center', maxW: 200 }); // رقم السهم (مربع)
+  put(1550, 510, c.name, { size: 23, maxW: 220 });                  // الاسم
+  put(1630, 562, c.phone, { size: 23, ltr: true, maxW: 280 });      // رقم الهاتف
+  put(1565, 648, dateStr, { size: 23, maxW: 240 });                 // التاريخ
 
-    // === RIGHT SECTION (stub) ===
-    // اسم الشركة
-    field(1355, 118, 380, COMPANY_NAME, { size: 14, bold: true, ltr: true }),
-    // رمز الشركة
-    field(1355, 158, 380, COMPANY_CODE, { size: 14, bold: true, ltr: true }),
-    // رقم (box)
-    field(1478, 213, 60, String(index), { size: 15, bold: true, extra: 'text-align:center;' }),
-    // الاسم
-    field(1355, 310, 380, contribution.name, { size: 14, bold: true }),
-    // رقم الهاتف
-    field(1355, 358, 380, contribution.phone, { size: 14, ltr: true }),
-    // التاريخ
-    field(1355, 410, 380, dateStr, { size: 14 }),
-  ].join('');
-
-  return div;
+  return canvas;
 }
 
 function closeModal() {

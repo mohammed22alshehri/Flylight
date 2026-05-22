@@ -161,4 +161,32 @@ async function dbGetStatistics() {
   }
 }
 
+// ===== Admin Authentication (server-side) =====
+// التحقق من كلمة سر الإدارة داخل خادم Supabase عبر دالة RPC آمنة.
+// كلمة السر (وقيمتها المشفّرة) لا تصل إلى المتصفح إطلاقاً.
+async function dbVerifyAdminPassword(password) {
+  const client = await initSupabase();
+  if (!client) {
+    showToast('لا يمكن الاتصال بقاعدة البيانات', 'error');
+    return false;
+  }
+
+  try {
+    const { data, error } = await client.rpc('verify_admin_password', {
+      input_password: password
+    });
+
+    if (error) {
+      console.error('Admin verification error:', error);
+      showToast('تعذّر التحقق من كلمة المرور', 'error');
+      return false;
+    }
+
+    return data === true;
+  } catch (error) {
+    console.error('Admin verification exception:', error);
+    return false;
+  }
+}
+
 console.log('✅ Supabase configuration loaded');
