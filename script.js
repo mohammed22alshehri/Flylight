@@ -348,8 +348,14 @@ async function approveContribution(id) {
   if (confirm('تأكيد الموافقة على هذه المساهمة؟')) {
     const success = await dbUpdateContributionStatus(id, 'تمت الموافقة');
     if (success) {
+      // إصدار الشهادات وحفظها في قاعدة البيانات فور الموافقة
+      const count = await dbIssueCertificates(id);
       loadDashboard();
-      showToast('تمت الموافقة على المساهمة', 'success');
+      if (count > 0) {
+        showToast(`تمت الموافقة — تم إصدار ${count} شهادة وحفظها`, 'success');
+      } else {
+        showToast('تمت الموافقة على المساهمة', 'success');
+      }
     }
   }
 }
@@ -448,7 +454,7 @@ async function viewDetails(id) {
 const SHARE_VALUE = 50;        // قيمة السهم الواحد بالريال
 const COMPANY_NAME = 'Fly Light Logistics';
 const COMPANY_CODE = 'FLLS';
-const COMPANY_CITY = 'الرياض';
+const COMPANY_CITY = 'ينبع';
 
 let _certTemplateImg = null;
 
@@ -467,6 +473,11 @@ function calcShares(amount) {
   return Math.max(1, Math.floor(parseFloat(amount || 0) / SHARE_VALUE));
 }
 
+// تنسيق الرقم التسلسلي: 1 → "0001"
+function formatSerial(n) {
+  return String(n).padStart(4, '0');
+}
+
 async function downloadCertificates(contributionId) {
   const contributions = await dbGetAllContributions();
   const c = contributions.find(x => x.id === contributionId);
@@ -475,10 +486,34 @@ async function downloadCertificates(contributionId) {
     return;
   }
 
-  const numShares = calcShares(c.amount);
-  const dateStr = c.created_at
-    ? new Date(c.created_at).toLocaleDateString('ar-SA')
-    : (c.date || new Date().toLocaleDateString('ar-SA'));
+  // ── جلب الشهادات المحفوظة من قاعدة البيانات ────────────────────
+  let certs = await dbGetCertificates(contributionId);
+
+  // للمساهمات القديمة (قبل إضافة الجدول): أصدر الشهادات الآن
+  if (certs.length === 0) {
+    showToast('جاري إصدار الشهادات لأول مرة...', 'success');
+    const issued = await dbIssueCertificates(contributionId);
+    if (issued === 0) {
+      showToast('تعذّر إصدار الشهادات — تأكد من تشغيل certificates_setup.sql', 'error');
+      return;
+    }
+    certs = await dbGetCertificates(contributionId);
+  }
+
+  if (certs.length === 0) {
+    showToast('لا توجد شهادات لهذه المساهمة', 'error');
+    return;
+  }
+  // ───────────────────────────────────────────────────────────────
+
+  const numShares = certs.length;
+
+  // التاريخ بالإنجليزية (DD/MM/YYYY)
+  const rawDate = c.created_at ? new Date(c.created_at) : new Date();
+  const dd   = String(rawDate.getDate()).padStart(2, '0');
+  const mm   = String(rawDate.getMonth() + 1).padStart(2, '0');
+  const yyyy = rawDate.getFullYear();
+  const dateStr = `${dd}/${mm}/${yyyy}`;
 
   showToast(`جاري إنشاء ${numShares} شهادة...`, 'success');
 
@@ -500,7 +535,7 @@ async function downloadCertificates(contributionId) {
     await document.fonts.ready;
   } catch (_) { /* تجاهل */ }
 
-  // الوصول إلى jsPDF من حزمة html2pdf
+  // الوصول إلى jsPDF
   const JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
   if (!JsPDF) {
     showToast('مكتبة PDF غير متوفرة', 'error');
@@ -513,12 +548,14 @@ async function downloadCertificates(contributionId) {
   try {
     const pdf = new JsPDF({ orientation: 'landscape', unit: 'px', format: [W, H] });
 
-    for (let i = 1; i <= numShares; i++) {
-      const canvas = renderCertificateCanvas(tpl, c, i, numShares, dateStr, W, H);
+    // كل شهادة تأخذ رقمها الدائم المحفوظ في قاعدة البيانات
+    certs.forEach((cert, idx) => {
+      const serialStr = formatSerial(cert.serial_no);
+      const canvas = renderCertificateCanvas(tpl, c, serialStr, numShares, dateStr, W, H);
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      if (i > 1) pdf.addPage([W, H], 'landscape');
+      if (idx > 0) pdf.addPage([W, H], 'landscape');
       pdf.addImage(imgData, 'JPEG', 0, 0, W, H);
-    }
+    });
 
     const safeName = (c.name || 'مساهم').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
     pdf.save(`كتيب_اسهم_${safeName}.pdf`);

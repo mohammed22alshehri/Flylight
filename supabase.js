@@ -161,6 +161,59 @@ async function dbGetStatistics() {
   }
 }
 
+// ===== Certificates =====
+
+// إصدار شهادات لمساهمة معتمدة (يستدعي دالة SQL الآمنة)
+// يُعيد عدد الشهادات المُصدَرة، أو 0 إذا كانت موجودة مسبقاً
+async function dbIssueCertificates(contributionId) {
+  const client = await initSupabase();
+  if (!client) return 0;
+
+  try {
+    const { data, error } = await client.rpc('issue_certificates', {
+      p_contribution_id: contributionId
+    });
+
+    if (error) {
+      console.error('Error issuing certificates:', error);
+      // الدالة غير موجودة → لم يُشغَّل certificates_setup.sql بعد
+      if (error.code === 'PGRST202') {
+        showToast('شغّل ملف certificates_setup.sql في Supabase أولاً', 'error');
+      }
+      return 0;
+    }
+
+    console.log(`✅ Issued ${data} certificate(s) for contribution ${contributionId}`);
+    return data || 0;
+  } catch (err) {
+    console.error('dbIssueCertificates error:', err);
+    return 0;
+  }
+}
+
+// جلب شهادات مساهمة معينة مرتبة حسب الرقم التسلسلي
+async function dbGetCertificates(contributionId) {
+  const client = await initSupabase();
+  if (!client) return [];
+
+  try {
+    const { data, error } = await client
+      .from('certificates')
+      .select('*')
+      .eq('contribution_id', contributionId)
+      .order('serial_no', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching certificates:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error('dbGetCertificates error:', err);
+    return [];
+  }
+}
+
 // ===== Admin Authentication (server-side) =====
 // التحقق من كلمة سر الإدارة داخل خادم Supabase عبر دالة RPC آمنة.
 // كلمة السر (وقيمتها المشفّرة) لا تصل إلى المتصفح إطلاقاً.
@@ -177,8 +230,13 @@ async function dbVerifyAdminPassword(password) {
     });
 
     if (error) {
-      console.error('Admin verification error:', error);
-      showToast('تعذّر التحقق من كلمة المرور', 'error');
+      console.error('Admin verification error:', error.code, '-', error.message);
+      // الدالة غير موجودة في Supabase بعد (لم يُشغّل admin_setup.sql)
+      if (error.code === 'PGRST202') {
+        showToast('لم يتم إعداد التحقق في Supabase بعد — شغّل ملف admin_setup.sql', 'error');
+      } else {
+        showToast('تعذّر التحقق من كلمة المرور', 'error');
+      }
       return false;
     }
 
