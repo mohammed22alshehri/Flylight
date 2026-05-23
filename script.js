@@ -636,9 +636,9 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   put(1500, 380, index, { size: 28, weight: 800, align: 'center', maxW: 130 });
 
   // ── معلومات المساهم — كل القيم right-edge موحّد عند x=1720 ──
-  put(1500, 510, c.name,  { size: 22, maxW: 320 });               // الاسم
-  put(1500, 562, c.phone, { size: 22, ltr: true, maxW: 320 });    // رقم الهاتف
-  put(1500, 648, dateStr, { size: 22, ltr: true, maxW: 320 });    // التاريخ
+  put(1000, 510, c.name,  { size: 22, maxW: 320 });               // الاسم
+  put(1000, 562, c.phone, { size: 22, ltr: true, maxW: 320 });    // رقم الهاتف
+  put(1000, 648, dateStr, { size: 22, ltr: true, maxW: 320 });    // التاريخ
 
   return canvas;
 }
