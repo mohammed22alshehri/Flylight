@@ -452,8 +452,8 @@ async function viewDetails(id) {
 // ===== Download Share Certificates =====
 // كل 50 ريال = شهادة سهم واحدة. يُولّد كتيب PDF يحوي شهادة لكل سهم.
 const SHARE_VALUE = 50;        // قيمة السهم الواحد بالريال
-const COMPANY_NAME = 'Fly Light Logistics';
-const COMPANY_CODE = 'FLLS';
+const COMPANY_NAME = 'FlyLight';
+const COMPANY_CODE = 'FL';
 const COMPANY_CITY = 'ينبع';
 
 let _certTemplateImg = null;
