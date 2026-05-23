@@ -452,8 +452,8 @@ async function viewDetails(id) {
 // ===== Download Share Certificates =====
 // كل 50 ريال = شهادة سهم واحدة. يُولّد كتيب PDF يحوي شهادة لكل سهم.
 const SHARE_VALUE = 50;        // قيمة السهم الواحد بالريال
-const COMPANY_NAME = 'FlyLight';
-const COMPANY_CODE = 'FL';
+const COMPANY_NAME = 'Fly Light Logistics';
+const COMPANY_CODE = 'FLLS';
 const COMPANY_CITY = 'ينبع الصناعية';
 
 let _certTemplateImg = null;
@@ -616,10 +616,10 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   put(270, 383, index, { size: 30, weight: 800, align: 'center', maxW: 120 });
 
   // "تشهد شركة ___" — right-edge أُزيح يساراً ليدخل في الفراغ وليس فوق الملصق، حجم أكبر
-  put(1066, 490, COMPANY_NAME, { size: 22, ltr: true, maxW: 215 });
+  put(1048, 490, COMPANY_NAME, { size: 21, ltr: true, maxW: 215 });
 
   // "الكائنة في (المدينة) ___" — ينبع الصناعية، حجم أكبر
-  put(900, 490, COMPANY_CITY, { size: 20, maxW: 170 });
+  put(588, 490, COMPANY_CITY, { size: 20, maxW: 170 });
 
   // "بأنّ (اسم المساهم) ___" — right-edge أُزيح يميناً، حجم أكبر، maxW أوسع لاستيعاب الأسماء الطويلة
   put(335, 490, c.name, { size: 20, maxW: 275 });
@@ -633,12 +633,12 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   put(1475, 327, COMPANY_CODE, { size: 22, ltr: true, align: 'center', maxW: 240 });
 
   // رقم السهم — المربع الأيمن (x أُزيح يميناً ليدخل داخل المربع)
-  put(1500, 380, index, { size: 28, weight: 800, align: 'center', maxW: 130 });
+  put(1685, 380, index, { size: 28, weight: 800, align: 'center', maxW: 130 });
 
   // ── معلومات المساهم — كل القيم right-edge موحّد عند x=1720 ──
-  put(1200, 510, c.name,  { size: 22, maxW: 320 });               // الاسم
-  put(1200, 562, c.phone, { size: 22, ltr: true, maxW: 320 });    // رقم الهاتف
-  put(1200, 648, dateStr, { size: 22, ltr: true, maxW: 320 });    // التاريخ
+  put(1720, 510, c.name,  { size: 22, maxW: 320 });               // الاسم
+  put(1720, 562, c.phone, { size: 22, ltr: true, maxW: 320 });    // رقم الهاتف
+  put(1720, 648, dateStr, { size: 22, ltr: true, maxW: 320 });    // التاريخ
 
   return canvas;
 }
