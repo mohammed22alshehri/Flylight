@@ -619,7 +619,7 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   put(1048, 490, COMPANY_NAME, { size: 23, ltr: true, maxW: 215 });
 
   // "الكائنة في (المدينة) ___" — ينبع الصناعية، حجم أكبر
-  put(500, 490, COMPANY_CITY, { size: 20, maxW: 170 });
+  put(690, 490, COMPANY_CITY, { size: 20, maxW: 170 });
 
   // "بأنّ (اسم المساهم) ___" — right-edge أُزيح يميناً، حجم أكبر، maxW أوسع لاستيعاب الأسماء الطويلة
   put(335, 490, c.name, { size: 20, maxW: 275 });
