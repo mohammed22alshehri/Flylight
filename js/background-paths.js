@@ -1,12 +1,12 @@
 /* ============================================================
-   BACKGROUND PATHS — Lightweight cinematic SVG
+   BACKGROUND PATHS — Lightweight animated SVG paths
    ============================================================ */
 
 function initBackgroundPaths(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  // 16 paths total — light enough to perform, rich enough to look premium
+  // 16 paths total — flow animation per path
   const layer1 = buildLayer(1, 8, '30, 145, 150');
   const layer2 = buildLayer(-1, 8, '43, 181, 186');
 
@@ -15,14 +15,21 @@ function initBackgroundPaths(containerId) {
          fill="none" preserveAspectRatio="xMidYMid slice"
          aria-hidden="true">${layer1}${layer2}</svg>
   `;
+
+  // Apply animation delays per path for staggered flow
+  const paths = container.querySelectorAll('.bg-path');
+  paths.forEach((p, i) => {
+    p.style.animationDelay = (i * 0.4) + 's';
+    p.style.animationDuration = (15 + (i % 4) * 3) + 's';
+  });
 }
 
 function buildLayer(position, count, rgb) {
   let paths = '';
   for (let i = 0; i < count; i++) {
     const offset  = i * 18 * position;
-    const opacity = 0.12 + i * 0.04;
-    const width   = 0.6 + i * 0.08;
+    const opacity = 0.18 + i * 0.05;
+    const width   = 0.8 + i * 0.12;
 
     const d = `M-${380 - offset} -${189 + i * 18}` +
               `C-${380 - offset} -${189 + i * 18} ` +
@@ -32,12 +39,16 @@ function buildLayer(position, count, rgb) {
               `${684 - offset} ${875 - i * 18} ` +
               `${684 - offset} ${875 - i * 18}`;
 
-    paths += `<path d="${d}" stroke="rgba(${rgb}, ${opacity})" stroke-width="${width}" fill="none"/>`;
+    paths += `<path class="bg-path" d="${d}"
+                    stroke="rgba(${rgb}, ${opacity})"
+                    stroke-width="${width}"
+                    stroke-dasharray="20 8"
+                    fill="none"/>`;
   }
   return paths;
 }
 
-// ── Title letter-by-letter reveal (lightweight CSS-only animation) ──
+// ── Title letter-by-letter reveal ──
 function animateHeroTitle() {
   const title = document.querySelector('.hero-title-animated');
   if (!title || title.dataset.animated) return;
@@ -62,4 +73,4 @@ function animateHeroTitle() {
   }
 }
 
-console.log('✅ background-paths.js loaded (lightweight)');
+console.log('✅ background-paths.js loaded');
