@@ -108,12 +108,12 @@
   --z-nav:     300;
   --z-toast:   400;
 
-  /* ── Glassmorphism (LIGHT) ── */
-  --glass-bg:     rgba(255, 255, 255, 0.75);
+  /* ── Glassmorphism (LIGHT) — minimal blur for performance ── */
+  --glass-bg:     rgba(255, 255, 255, 0.92);
   --glass-border: rgba(30, 145, 150, 0.18);
-  --glass-blur:   blur(20px) saturate(1.4);
+  --glass-blur:   blur(8px);
 
-  --glass-bg-light:    rgba(255, 255, 255, 0.6);
+  --glass-bg-light:    rgba(255, 255, 255, 0.85);
   --glass-border-light: rgba(30, 145, 150, 0.1);
 
 }

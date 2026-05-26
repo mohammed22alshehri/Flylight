@@ -2,30 +2,9 @@
    LAYOUT — Footer, page transitions, background grid (LIGHT)
    ============================================================ */
 
-/* ── Body background grid (subtle on light) ─────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(rgba(30, 145, 150, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 145, 150, 0.04) 1px, transparent 1px);
-  background-size: 80px 80px;
-  pointer-events: none;
+/* Body background — lightweight static color, no fixed pseudos */
+body {
   background-color: var(--clr-bg);
-}
-
-/* Ambient soft gradient blobs */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 50% 40% at 20% 20%, rgba(43, 181, 186, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(20, 54, 92, 0.04) 0%, transparent 70%);
 }
 
 /* ── Footer (LIGHT) ─────────────────────────────────────────── */
