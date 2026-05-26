@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="css/components/modal.css">
   <link rel="stylesheet" href="css/components/toast.css">
   <link rel="stylesheet" href="css/components/background-paths.css">
+  <link rel="stylesheet" href="css/components/globe.css">
 
   <!-- CSS — Pages -->
   <link rel="stylesheet" href="css/pages/home.css">
@@ -178,13 +179,20 @@
           <!-- Bento Grid -->
           <div class="bento-grid">
 
-            <!-- Featured card -->
-            <article class="service-card featured reveal" aria-label="النقل والشحن">
-              <div class="service-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <!-- Featured card with interactive globe -->
+            <article class="service-card featured reveal globe-card" aria-label="النقل والشحن">
+              <div class="globe-wrapper">
+                <canvas id="serviceGlobe" class="service-globe" aria-hidden="true"></canvas>
+                <div class="globe-pulse"></div>
               </div>
-              <h3>النقل والشحن</h3>
-              <p>خدمات نقل وشحن سريعة وآمنة مع تتبع لحظي للشحنات محلياً ودولياً. نضمن وصول بضائعكم في الوقت المحدد وبأعلى معايير السلامة.</p>
+              <div class="globe-card-text">
+                <span class="globe-card-badge">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  شبكة عالمية
+                </span>
+                <h3>النقل والشحن</h3>
+                <p>خدمات نقل وشحن سريعة وآمنة مع تتبع لحظي للشحنات محلياً ودولياً. شبكتنا تغطي أهم مدن العالم.</p>
+              </div>
             </article>
 
             <!-- Row 1, col 3 -->
@@ -590,6 +598,9 @@
   <!-- jsPDF UMD (exposes window.jspdf.jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- Cobe — interactive 3D globe library (~12KB gzipped, WebGL based) -->
+  <script src="https://unpkg.com/cobe@0.6.3/dist/index.iife.js"></script>
+
   <!-- Our scripts -->
   <script src="supabase.js"></script>
   <script src="js/certificates.js"></script>
@@ -597,6 +608,7 @@
   <script src="js/form.js"></script>
   <script src="js/animations.js"></script>
   <script src="js/background-paths.js"></script>
+  <script src="js/globe.js"></script>
   <script src="js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -604,6 +616,11 @@
       initBackgroundPaths('bgPaths');
       // Animate hero title letter-by-letter
       animateHeroTitle();
+      // Initialize the interactive globe inside the shipping card
+      // (cobe library is loaded as `window.createGlobe`)
+      if (typeof createGlobe !== 'undefined') {
+        initGlobe('serviceGlobe');
+      }
     });
   </script>
 
