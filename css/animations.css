@@ -139,7 +139,7 @@
 .orb-1 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(30, 145, 150, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(43, 181, 186, 0.18) 0%, transparent 70%);
   top: -200px;
   right: -150px;
   animation: orb-float 18s ease-in-out infinite;
@@ -148,7 +148,7 @@
 .orb-2 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(20, 54, 92, 0.5) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(94, 205, 209, 0.15) 0%, transparent 70%);
   bottom: -100px;
   left: -100px;
   animation: orb-float-2 22s ease-in-out infinite;
@@ -157,7 +157,7 @@
 .orb-3 {
   width: 350px;
   height: 350px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
   top: 40%;
   left: 30%;
   animation: orb-float-3 15s ease-in-out infinite;

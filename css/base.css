@@ -34,14 +34,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--clr-navy-900);
+  background: var(--clr-cream-200);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--clr-teal-700);
+  background: var(--clr-teal-500);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--clr-teal-500);
+  background: var(--clr-teal-700);
 }
 
 /* Selection */
