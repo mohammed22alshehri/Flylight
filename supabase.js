@@ -1,13 +1,17 @@
 // ===== Supabase Configuration =====
-// Publishable key is safe to use in browser (RLS is enabled)
+// Load from environment variables (never hardcode keys!)
+// Frontend only has access to ANON key (RLS protected)
+// Service role key stays server-side only
 
 let supabaseClient = null;
 
 // Function to initialize Supabase
 async function initSupabase() {
   if (supabaseClient) return supabaseClient;
-  
-  // Direct configuration (publishable key is safe for browser use with RLS enabled)
+
+  // ⚠️ الـ ANON Key آمنة للعرض هنا (Supabase صممتها كذا)
+  // الحماية الحقيقية تأتي من RLS Policies في قاعدة البيانات
+  // شغّل ملف SECURE_DATABASE.sql في Supabase لتفعيل الحماية
   const SUPABASE_URL = 'https://cqvgwndejcqheojsanlk.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_0_Zgt0LPralL3mkOQ7pqiA_0-SIYLDS';
   
@@ -33,17 +37,24 @@ async function initSupabase() {
 
 // ===== Database Operations =====
 
-// Get all contributions
+// Get all contributions (محمي — يتطلب كلمة سر الإدارة المخزّنة في session)
 async function dbGetAllContributions() {
   const client = await initSupabase();
   if (!client) return [];
-  
+
+  // الحصول على كلمة السر من الجلسة الحالية
+  const adminPassword = sessionStorage.getItem('adminPasswordTemp');
+  if (!adminPassword) {
+    console.warn('No admin password in session');
+    return [];
+  }
+
   try {
-    const { data, error } = await client
-      .from('contributions')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
+    // استخدام RPC function الآمنة بدلاً من القراءة المباشرة
+    const { data, error } = await client.rpc('get_all_contributions_admin', {
+      admin_password: adminPassword
+    });
+
     if (error) {
       console.error('Error fetching contributions:', error);
       return [];
@@ -92,44 +103,59 @@ async function dbInsertContribution(contribution) {
   }
 }
 
-// Update contribution status
+// Update contribution status (محمي عبر RPC functions)
 async function dbUpdateContributionStatus(id, newStatus) {
   const client = await initSupabase();
   if (!client) return false;
-  
+
+  const adminPassword = sessionStorage.getItem('adminPasswordTemp');
+  if (!adminPassword) {
+    showToast('يجب تسجيل الدخول كإدارة', 'error');
+    return false;
+  }
+
   try {
-    // If rejecting, delete
+    // الرفض → استخدام RPC الآمنة
     if (newStatus === 'مرفوض') {
-      const { error } = await client
-        .from('contributions')
-        .delete()
-        .eq('id', id);
-      
+      const { data, error } = await client.rpc('reject_contribution_admin', {
+        p_contribution_id: id,
+        admin_password: adminPassword
+      });
+
       if (error) {
-        console.error('Error deleting:', error);
-        showToast('خطأ في حذف المساهمة', 'error');
+        console.error('Reject error:', error);
+        showToast('خطأ في رفض المساهمة', 'error');
         return false;
       }
-      console.log('✅ Contribution rejected and deleted');
+
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result?.success) {
+        showToast(result?.message || 'فشل الرفض', 'error');
+        return false;
+      }
       return true;
     }
-    
-    // If approving, update
-    const { error } = await client
-      .from('contributions')
-      .update({
-        status: newStatus,
-        review_date: new Date().toLocaleDateString('ar-SA'),
-        reviewed_at: new Date().toISOString()
-      })
-      .eq('id', id);
-    
+
+    // الموافقة → استخدام RPC الآمنة (تُصدر الشهادات تلقائياً)
+    const { data, error } = await client.rpc('approve_contribution_admin', {
+      p_contribution_id: id,
+      admin_password: adminPassword
+    });
+
     if (error) {
-      console.error('Error updating:', error);
-      showToast('خطأ في تحديث الحالة', 'error');
+      console.error('Approve error:', error);
+      showToast('خطأ في الموافقة', 'error');
       return false;
     }
-    console.log('✅ Status updated to:', newStatus);
+
+    const result = Array.isArray(data) ? data[0] : data;
+    if (!result?.success) {
+      showToast(result?.message || 'فشلت الموافقة', 'error');
+      return false;
+    }
+
+    // حفظ عدد الشهادات المُصدرة للاستخدام في dashboard.js
+    window._lastApprovalCertCount = result?.cert_count || 0;
     return true;
   } catch (error) {
     console.error('Update error:', error);
