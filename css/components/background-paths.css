@@ -1,6 +1,5 @@
 /* ============================================================
-   BACKGROUND PATHS — Light cinematic hero
-   Matches Fly Light logo (teal on cream/white)
+   BACKGROUND PATHS — Lightweight light cinematic hero
    ============================================================ */
 
 /* ── Light hero wrapper ─────────────────────────────────────── */
@@ -14,48 +13,44 @@
   overflow: hidden;
   background:
     radial-gradient(ellipse 60% 80% at 50% 30%, rgba(43, 181, 186, 0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(30, 145, 150, 0.06) 0%, transparent 70%),
-    linear-gradient(180deg, #FAFCFE 0%, #F0F7F9 50%, #E8F4F6 100%);
+    linear-gradient(180deg, #FAFCFE 0%, #F0F7F9 100%);
 }
 
-/* Subtle grid overlay for premium feel */
+/* Subtle grid (lightweight — uses static background) */
 .hero-light::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(30, 145, 150, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 145, 150, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(30, 145, 150, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 145, 150, 0.04) 1px, transparent 1px);
   background-size: 80px 80px;
   pointer-events: none;
   z-index: 1;
 }
 
-/* Soft fade to next section (LIGHT) */
+/* Soft fade to next section */
 .hero-light::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
+  left: 0; right: 0;
+  height: 100px;
   background: linear-gradient(180deg, transparent 0%, var(--clr-bg) 100%);
   pointer-events: none;
   z-index: 2;
 }
 
-/* ── Background Paths SVG wrapper ───────────────────────────── */
+/* ── SVG container — STATIC, no animation on paths ──────────── */
 .bg-paths-container {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-}
-
-.bg-paths-wrapper {
-  position: absolute;
-  inset: 0;
+  /* Single gentle drift animation on the whole SVG (GPU-accelerated) */
+  animation: bg-drift 30s ease-in-out infinite;
+  will-change: transform;
 }
 
 .bg-paths-svg {
@@ -65,26 +60,12 @@
   height: 100%;
 }
 
-/* ── Path animation — flowing stroke ────────────────────────── */
-.bg-path {
-  animation: bg-path-flow linear infinite;
+@keyframes bg-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-2%, -1%); }
 }
 
-@keyframes bg-path-flow {
-  0% {
-    stroke-dashoffset: 100%;
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    stroke-dashoffset: -100%;
-    opacity: 0.3;
-  }
-}
-
-/* ── Light hero content ─────────────────────────────────────── */
+/* ── Content ─────────────────────────────────────────────────── */
 .hero-light .hero-content {
   position: relative;
   z-index: 3;
@@ -98,14 +79,11 @@
   gap: var(--space-6);
 }
 
-/* Brand badge (light variant) */
 .hero-light .hero-badge {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(30, 145, 150, 0.25);
   color: var(--clr-teal-900);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(30, 145, 150, 0.1);
+  box-shadow: 0 4px 16px rgba(30, 145, 150, 0.08);
   animation: none;
 }
 
@@ -113,7 +91,7 @@
   color: var(--clr-gold-600);
 }
 
-/* ── Animated title (letter-by-letter) ──────────────────────── */
+/* ── Title — letter-by-letter ────────────────────────────────── */
 .hero-title-animated {
   font-size: clamp(2.5rem, 8vw, 6rem);
   font-weight: 900;
@@ -122,20 +100,11 @@
   margin: 0;
 }
 
-.hero-word {
-  display: inline-block;
-  margin-inline-end: 0.25em;
-}
-
-.hero-word:last-child {
-  margin-inline-end: 0;
-}
-
 .hero-letter {
   display: inline-block;
   opacity: 0;
-  transform: translateY(60px);
-  animation: letter-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform: translateY(40px);
+  animation: letter-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   background: linear-gradient(135deg,
     #0D6C70 0%,
     #1E9196 40%,
@@ -144,6 +113,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  white-space: pre;
 }
 
 @keyframes letter-rise {
@@ -153,14 +123,14 @@
   }
 }
 
-/* ── Light subtitle ─────────────────────────────────────────── */
+/* ── Subtitle ────────────────────────────────────────────────── */
 .hero-light .hero-subtitle {
   font-size: clamp(1rem, 2vw, 1.25rem);
   color: var(--clr-navy-800);
   max-width: 600px;
   line-height: 1.8;
   opacity: 0;
-  animation: fade-up-slow 1.2s ease 0.8s forwards;
+  animation: fade-up-slow 0.8s ease 0.7s forwards;
 }
 
 @keyframes fade-up-slow {
@@ -168,17 +138,16 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Light CTA buttons ──────────────────────────────────────── */
+/* ── CTA buttons ─────────────────────────────────────────────── */
 .hero-light .hero-buttons {
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
   justify-content: center;
   opacity: 0;
-  animation: fade-up-slow 1.2s ease 1s forwards;
+  animation: fade-up-slow 0.8s ease 0.9s forwards;
 }
 
-/* Premium CTA — light theme */
 .btn-light-primary {
   display: inline-flex;
   align-items: center;
@@ -190,41 +159,17 @@
   font-weight: 700;
   cursor: pointer;
   border: none;
-  position: relative;
-  overflow: hidden;
   background: linear-gradient(135deg, #0D6C70 0%, #1E9196 50%, #2BB5BA 100%);
   color: #fff;
-  box-shadow:
-    0 8px 24px rgba(30, 145, 150, 0.35),
-    0 2px 8px rgba(30, 145, 150, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: transform 0.3s var(--ease-out),
-              box-shadow 0.3s var(--ease-out);
+  box-shadow: 0 8px 20px rgba(30, 145, 150, 0.3);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .btn-light-primary:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 12px 32px rgba(43, 181, 186, 0.5),
-    0 4px 12px rgba(30, 145, 150, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(43, 181, 186, 0.4);
 }
 
-.btn-light-primary::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-  transition: none;
-}
-
-.btn-light-primary:hover::after {
-  animation: shimmer 0.8s linear;
-}
-
-/* Secondary glass button — light variant */
 .btn-light-glass {
   display: inline-flex;
   align-items: center;
@@ -235,35 +180,33 @@
   font-size: var(--text-lg);
   font-weight: 700;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   color: var(--clr-teal-900);
   border: 1px solid rgba(30, 145, 150, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(30, 145, 150, 0.08);
-  transition: all 0.3s var(--ease-out);
+  box-shadow: 0 4px 16px rgba(30, 145, 150, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
 
 .btn-light-glass:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: #fff;
   border-color: var(--clr-teal-500);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(30, 145, 150, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(30, 145, 150, 0.15);
 }
 
 .btn-light-primary .arrow,
 .btn-light-glass .arrow {
   display: inline-block;
   margin-inline-start: var(--space-2);
-  transition: transform 0.3s var(--ease-out);
+  transition: transform 0.25s ease;
 }
 
 .btn-light-primary:hover .arrow,
 .btn-light-glass:hover .arrow {
-  transform: translateX(-6px); /* RTL → arrow moves left */
+  transform: translateX(-6px);
 }
 
-/* ── Light hero stats ───────────────────────────────────────── */
+/* ── Stats ───────────────────────────────────────────────────── */
 .hero-light .hero-stats {
   display: flex;
   gap: var(--space-12);
@@ -273,13 +216,12 @@
   flex-wrap: wrap;
   justify-content: center;
   opacity: 0;
-  animation: fade-up-slow 1.2s ease 1.2s forwards;
+  animation: fade-up-slow 0.8s ease 1.1s forwards;
 }
 
 .hero-light .hero-stat-value {
   font-size: clamp(1.5rem, 3.5vw, 2.25rem);
   font-weight: 900;
-  color: var(--clr-teal-900);
   line-height: 1;
   background: linear-gradient(135deg, #0D6C70, #2BB5BA);
   -webkit-background-clip: text;
@@ -292,10 +234,10 @@
   color: var(--clr-navy-800);
   margin-top: var(--space-2);
   font-weight: 600;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
-/* ── Scroll indicator (light variant) ───────────────────────── */
+/* ── Scroll indicator ────────────────────────────────────────── */
 .hero-light .scroll-indicator {
   color: var(--clr-navy-800);
   z-index: 4;
@@ -309,7 +251,7 @@
   background: var(--clr-teal-700);
 }
 
-/* ── Responsive ─────────────────────────────────────────────── */
+/* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .hero-light .hero-content {
     padding-top: var(--space-24);
@@ -326,13 +268,13 @@
   }
 }
 
-/* ── Reduced motion ─────────────────────────────────────────── */
+/* ── Disable on slow devices / reduced motion ───────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .bg-path,
   .hero-letter,
   .hero-light .hero-subtitle,
   .hero-light .hero-buttons,
-  .hero-light .hero-stats {
+  .hero-light .hero-stats,
+  .bg-paths-container {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
