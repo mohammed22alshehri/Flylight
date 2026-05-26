@@ -449,11 +449,10 @@ async function viewDetails(id) {
   document.body.style.overflow = 'hidden';
 }
 
-
 // ===== Download Share Certificates =====
 // كل 50 ريال = شهادة سهم واحدة. يُولّد كتيب PDF يحوي شهادة لكل سهم.
 const SHARE_VALUE = 50;        // قيمة السهم الواحد بالريال
-const COMPANY_NAME = 'FlyLight';
+const COMPANY_NAME = 'Fly Light';
 const COMPANY_CODE = 'FL';
 const COMPANY_CITY = 'ينبع الصناعية';
 
