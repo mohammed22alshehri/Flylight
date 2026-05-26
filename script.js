@@ -593,7 +593,7 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   }
 
   // =========================================================
-  // دليل الضبط:
+   // دليل الضبط:
   //   x  → حرّكه يميناً (+) أو يساراً (−)
   //   y  → حرّكه أسفل (+) أو أعلى (−)
   //   size  → حجم الخط بالبيكسل
@@ -604,22 +604,22 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   // ===== القسم الأيسر — جسم الشهادة (x: 0 → 1370) =====
 
   // رأس اليسار: اسم الشركة — right-edge أُزيح يساراً لتجنب التداخل مع ملصق "اسم الشركة:"
-  put(1095, 273, COMPANY_NAME, { size: 22, ltr: true, maxW: 225 });
+  put(1048, 273, COMPANY_NAME, { size: 22, ltr: true, maxW: 225 });
 
   // رأس اليسار: رمز الشركة — مُوسَّط في الفراغ (center بدلاً من right)
   put(210, 273, COMPANY_CODE, { size: 21, ltr: true, align: 'center', maxW: 120 });
 
   // التاريخ — y أُرفع ليقع على الخط وليس تحته | ltr:true للتاريخ الإنجليزي
-  put(1135, 374, dateStr, { size: 22, ltr: true, maxW: 255 });
+  put(1115, 374, dateStr, { size: 22, ltr: true, maxW: 255 });
 
   // رقم السهم — المربع الأيسر (ممتاز — بدون تغيير)
   put(270, 383, index, { size: 30, weight: 800, align: 'center', maxW: 120 });
 
   // "تشهد شركة ___" — right-edge أُزيح يساراً ليدخل في الفراغ وليس فوق الملصق، حجم أكبر
-  put(1048, 490, COMPANY_NAME, { size: 21, ltr: true, maxW: 215 });
+  put(1048, 490, COMPANY_NAME, { size: 23, ltr: true, maxW: 215 });
 
   // "الكائنة في (المدينة) ___" — ينبع الصناعية، حجم أكبر
-  put(588, 490, COMPANY_CITY, { size: 20, maxW: 170 });
+  put(685, 490, COMPANY_CITY, { size: 20, maxW: 170 });
 
   // "بأنّ (اسم المساهم) ___" — right-edge أُزيح يميناً، حجم أكبر، maxW أوسع لاستيعاب الأسماء الطويلة
   put(335, 490, c.name, { size: 20, maxW: 275 });
@@ -630,17 +630,18 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   put(1595, 272, COMPANY_NAME, { size: 23, ltr: true, maxW: 250 });
 
   // رمز الشركة — مُوسَّط في الفراغ (center)
-  put(1475, 327, COMPANY_CODE, { size: 22, ltr: true, align: 'center', maxW: 240 });
+  put(1595, 327, COMPANY_CODE, { size: 22, ltr: true, align: 'center', maxW: 240 });
 
   // رقم السهم — المربع الأيمن (x أُزيح يميناً ليدخل داخل المربع)
-  put(1685, 380, index, { size: 28, weight: 800, align: 'center', maxW: 130 });
+  put(1655, 380, index, { size: 28, weight: 800, align: 'center', maxW: 130 });
 
   // ── معلومات المساهم — كل القيم right-edge موحّد عند x=1720 ──
-  put(1720, 510, c.name,  { size: 22, maxW: 320 });               // الاسم
-  put(1720, 562, c.phone, { size: 22, ltr: true, maxW: 320 });    // رقم الهاتف
-  put(1720, 648, dateStr, { size: 22, ltr: true, maxW: 320 });    // التاريخ
+  put(1620, 510, c.name,  { size: 22, maxW: 320 });               // الاسم
+  put(1620, 562, c.phone, { size: 22, ltr: true, maxW: 320 });    // رقم الهاتف
+  put(1620, 648, dateStr, { size: 22, ltr: true, maxW: 320 });    // التاريخ
 
   return canvas;
+
 }
 
 function closeModal() {
