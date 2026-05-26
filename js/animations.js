@@ -35,8 +35,10 @@ function setupScrollReveal() {
   els.forEach(el => io.observe(el));
 }
 
-// ── Particle canvas (hero background) ────────────────────────
+// ── Particle canvas — DISABLED for light theme (using SVG paths instead) ──
 function setupParticleCanvas() {
+  return; // skip — light hero uses SVG paths, no need for canvas particles
+  // eslint-disable-next-line no-unreachable
   const canvas  = document.getElementById('hero-canvas');
   const homePage = document.getElementById('home');
   if (!canvas || !homePage) return;

@@ -1,104 +1,65 @@
 /* ============================================================
-   BACKGROUND PATHS — Cinematic animated SVG paths
-   Vanilla JS implementation (no React/framer-motion needed)
-   Light theme — matches Fly Light logo colors
+   BACKGROUND PATHS — Lightweight cinematic SVG
    ============================================================ */
 
-function initBackgroundPaths(containerId, options = {}) {
+function initBackgroundPaths(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const {
-    pathCount = 36,
-    primaryColor = '30, 145, 150',   // teal-700 — matches logo
-    accentColor  = '43, 181, 186',   // teal-500
-  } = options;
-
-  // Build two layered SVGs for crossing path effect
-  const layer1 = createPathLayer(1, pathCount, primaryColor);
-  const layer2 = createPathLayer(-1, pathCount, accentColor);
+  // 16 paths total — light enough to perform, rich enough to look premium
+  const layer1 = buildLayer(1, 8, '30, 145, 150');
+  const layer2 = buildLayer(-1, 8, '43, 181, 186');
 
   container.innerHTML = `
-    <div class="bg-paths-wrapper">
-      ${layer1}
-      ${layer2}
-    </div>
-  `;
-
-  // Trigger animation
-  requestAnimationFrame(() => {
-    container.querySelectorAll('.bg-path').forEach((path, i) => {
-      const len = path.getTotalLength();
-      path.style.strokeDasharray  = len;
-      path.style.strokeDashoffset = len * 0.7;
-      path.style.animationDelay   = `${i * 0.05}s`;
-    });
-  });
-}
-
-function createPathLayer(position, count, rgb) {
-  const paths = [];
-  for (let i = 0; i < count; i++) {
-    const d = `M-${380 - i * 5 * position} -${189 + i * 6}` +
-              `C-${380 - i * 5 * position} -${189 + i * 6} ` +
-              `-${312 - i * 5 * position} ${216 - i * 6} ` +
-              `${152 - i * 5 * position} ${343 - i * 6}` +
-              `C${616 - i * 5 * position} ${470 - i * 6} ` +
-              `${684 - i * 5 * position} ${875 - i * 6} ` +
-              `${684 - i * 5 * position} ${875 - i * 6}`;
-
-    const opacity = 0.08 + i * 0.022;
-    const width   = 0.5 + i * 0.04;
-    const dur     = 20 + Math.random() * 10;
-
-    paths.push(`
-      <path class="bg-path"
-            d="${d}"
-            stroke="rgba(${rgb}, ${opacity})"
-            stroke-width="${width}"
-            fill="none"
-            style="animation-duration: ${dur}s;"/>
-    `);
-  }
-
-  return `
     <svg class="bg-paths-svg" viewBox="0 0 696 316"
          fill="none" preserveAspectRatio="xMidYMid slice"
-         aria-hidden="true">
-      ${paths.join('')}
-    </svg>
+         aria-hidden="true">${layer1}${layer2}</svg>
   `;
 }
 
-// ── Title letter-by-letter reveal ─────────────────────────────
+function buildLayer(position, count, rgb) {
+  let paths = '';
+  for (let i = 0; i < count; i++) {
+    const offset  = i * 18 * position;
+    const opacity = 0.12 + i * 0.04;
+    const width   = 0.6 + i * 0.08;
+
+    const d = `M-${380 - offset} -${189 + i * 18}` +
+              `C-${380 - offset} -${189 + i * 18} ` +
+              `-${312 - offset} ${216 - i * 18} ` +
+              `${152 - offset} ${343 - i * 18}` +
+              `C${616 - offset} ${470 - i * 18} ` +
+              `${684 - offset} ${875 - i * 18} ` +
+              `${684 - offset} ${875 - i * 18}`;
+
+    paths += `<path d="${d}" stroke="rgba(${rgb}, ${opacity})" stroke-width="${width}" fill="none"/>`;
+  }
+  return paths;
+}
+
+// ── Title letter-by-letter reveal (lightweight CSS-only animation) ──
 function animateHeroTitle() {
   const title = document.querySelector('.hero-title-animated');
   if (!title || title.dataset.animated) return;
   title.dataset.animated = 'true';
 
-  const words = title.textContent.trim().split(' ');
+  const text = title.textContent.trim();
   title.innerHTML = '';
 
-  let totalDelay = 0;
-  words.forEach((word, wi) => {
-    const wordSpan = document.createElement('span');
-    wordSpan.className = 'hero-word';
-
-    [...word].forEach((letter, li) => {
-      const letterSpan = document.createElement('span');
-      letterSpan.className = 'hero-letter';
-      letterSpan.textContent = letter;
-      letterSpan.style.animationDelay = `${totalDelay}s`;
-      totalDelay += 0.03;
-      wordSpan.appendChild(letterSpan);
-    });
-
-    title.appendChild(wordSpan);
-    if (wi < words.length - 1) {
+  let delay = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === ' ') {
       title.appendChild(document.createTextNode(' '));
+      continue;
     }
-    totalDelay += 0.05;
-  });
+    const span = document.createElement('span');
+    span.className = 'hero-letter';
+    span.textContent = ch;
+    span.style.animationDelay = (delay * 0.04) + 's';
+    title.appendChild(span);
+    delay++;
+  }
 }
 
-console.log('✅ background-paths.js loaded');
+console.log('✅ background-paths.js loaded (lightweight)');
