@@ -1,8 +1,7 @@
 /* ============================================================
-   DASHBOARD PAGE
+   DASHBOARD PAGE (LIGHT THEME)
    ============================================================ */
 
-/* ── Admin Login Screen ── */
 .admin-login-screen {
   min-height: 100vh;
   display: flex;
@@ -16,21 +15,19 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(30,145,150,0.1) 0%, transparent 70%);
+  background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(30, 145, 150, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .login-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: 1px solid var(--clr-border-2);
   border-radius: var(--radius-2xl);
   padding: var(--space-12) var(--space-10);
   width: 100%;
   max-width: 420px;
   text-align: center;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(30,145,150,0.1);
+  box-shadow: var(--shadow-card-lg), 0 0 0 1px rgba(30, 145, 150, 0.06);
   animation: scale-in var(--dur-slow) var(--ease-spring);
   position: relative;
   overflow: hidden;
@@ -41,16 +38,16 @@
   position: absolute;
   top: -1px;
   left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--clr-teal-700), transparent);
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--clr-teal-500), transparent);
 }
 
 .login-icon {
   width: 72px;
   height: 72px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgba(30,145,150,0.2), rgba(43,181,186,0.1));
-  border: 1px solid rgba(30,145,150,0.3);
+  background: linear-gradient(135deg, var(--clr-teal-50), rgba(43, 181, 186, 0.15));
+  border: 1px solid rgba(30, 145, 150, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,7 +57,7 @@
 .login-icon svg {
   width: 32px;
   height: 32px;
-  color: var(--clr-teal-400);
+  color: var(--clr-teal-700);
 }
 
 .login-card h2 {
@@ -85,12 +82,10 @@
   .login-card { padding: var(--space-8) var(--space-6); }
 }
 
-/* ── Dashboard Content ── */
 .dashboard-section {
   padding: var(--space-8) var(--space-6) var(--space-24);
 }
 
-/* Stats grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -105,7 +100,6 @@
   .stats-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Dashboard top bar ── */
 .dashboard-topbar {
   display: flex;
   align-items: center;
@@ -133,33 +127,28 @@
   align-items: center;
 }
 
-/* Amount in table */
 .amount-strong {
   font-weight: 800;
-  color: var(--clr-teal-300);
+  color: var(--clr-teal-900);
 }
 
-/* Date in table */
 .date-cell {
   color: var(--clr-text-muted);
   font-size: var(--text-xs);
   white-space: nowrap;
 }
 
-/* Phone in table */
 .phone-cell {
   direction: ltr;
   color: var(--clr-text-secondary);
   font-size: var(--text-sm);
 }
 
-/* Name */
 .name-cell {
   font-weight: 700;
   color: var(--clr-text-primary);
 }
 
-/* Modal receipt block */
 .receipt-block {
   margin-top: var(--space-5);
 }
@@ -172,9 +161,10 @@
 }
 
 .receipt-pdf-wrapper {
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--clr-border-2);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  background: var(--clr-cream-100);
 }
 
 .receipt-pdf-wrapper iframe {
@@ -188,15 +178,15 @@
   display: block;
   text-align: center;
   padding: var(--space-3);
-  background: rgba(30,145,150,0.08);
-  border-top: 1px solid var(--glass-border);
+  background: var(--clr-cream-100);
+  border-top: 1px solid var(--clr-border-2);
   font-size: var(--text-sm);
-  color: var(--clr-teal-400);
+  color: var(--clr-teal-700);
   font-weight: 600;
   text-decoration: none;
   transition: background var(--dur-fast);
 }
 
 .receipt-pdf-download:hover {
-  background: rgba(30,145,150,0.15);
+  background: var(--clr-teal-50);
 }

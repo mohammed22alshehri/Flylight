@@ -1,27 +1,26 @@
 /* ============================================================
-   CONTRIBUTE PAGE
+   CONTRIBUTE PAGE (LIGHT THEME)
    ============================================================ */
 
 .contribute-section {
   padding: var(--space-12) var(--space-6) var(--space-24);
 }
 
-/* ── IBAN Bank Card ── */
+/* IBAN Bank Card (kept dark for premium card feel) */
 .iban-card {
-  background: linear-gradient(135deg, #0D6C70 0%, #0A1C33 50%, #14365C 100%);
+  background: linear-gradient(135deg, #0D6C70 0%, #14365C 50%, #0A1C33 100%);
   border-radius: var(--radius-xl);
   padding: var(--space-6) var(--space-8);
   margin-bottom: var(--space-8);
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(43, 181, 186, 0.25);
+  border: 1px solid rgba(43, 181, 186, 0.3);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(43, 181, 186, 0.1),
-    inset 0 1px 0 rgba(255,255,255,0.1);
+    0 16px 40px rgba(13, 108, 112, 0.25),
+    0 2px 8px rgba(13, 108, 112, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Card shine */
 .iban-card::before {
   content: '';
   position: absolute;
@@ -29,11 +28,10 @@
   left: -10%;
   width: 60%;
   height: 200%;
-  background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.04) 50%, transparent 80%);
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.05) 50%, transparent 80%);
   pointer-events: none;
 }
 
-/* Decorative circles */
 .iban-card::after {
   content: '';
   position: absolute;
@@ -42,11 +40,10 @@
   width: 220px;
   height: 220px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   pointer-events: none;
 }
 
-/* Chip decoration */
 .iban-chip {
   position: absolute;
   top: var(--space-6);
@@ -55,7 +52,7 @@
   height: 32px;
   border-radius: 6px;
   background: linear-gradient(135deg, #c9a227, #f0c84b);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .iban-card-top {
@@ -74,21 +71,18 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: var(--space-2);
 }
 
-.iban-label svg {
-  width: 14px;
-  height: 14px;
-}
+.iban-label svg { width: 14px; height: 14px; }
 
 .iban-bank-name {
   font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 700;
 }
 
@@ -101,10 +95,10 @@
   margin-top: var(--space-2);
   position: relative;
   z-index: 1;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ── How to contribute steps ── */
+/* Steps */
 .steps-row {
   display: flex;
   gap: var(--space-6);
@@ -124,15 +118,15 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--clr-teal-900), var(--clr-teal-700));
-  border: 1px solid rgba(30,145,150,0.4);
+  background: linear-gradient(135deg, var(--clr-teal-700), var(--clr-teal-500));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--text-sm);
   font-weight: 800;
-  color: var(--clr-teal-300);
+  color: #fff;
   flex-shrink: 0;
+  box-shadow: var(--shadow-teal-sm);
 }
 
 .step-text {
@@ -148,10 +142,10 @@
   margin-bottom: 2px;
 }
 
-/* ── Share Calculator preview ── */
+/* Share Calculator */
 .share-calculator {
-  background: rgba(30, 145, 150, 0.06);
-  border: 1px solid rgba(30, 145, 150, 0.15);
+  background: var(--clr-teal-50);
+  border: 1px solid rgba(30, 145, 150, 0.2);
   border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
   display: flex;
@@ -163,13 +157,13 @@
 
 .share-calc-label {
   font-size: var(--text-sm);
-  color: var(--clr-text-muted);
+  color: var(--clr-text-secondary);
 }
 
 .share-calc-value {
   font-size: var(--text-xl);
   font-weight: 900;
-  color: var(--clr-teal-400);
+  color: var(--clr-teal-900);
 }
 
 .share-calc-value span {
