@@ -1,0 +1,202 @@
+/* ============================================================
+   DASHBOARD PAGE
+   ============================================================ */
+
+/* ── Admin Login Screen ── */
+.admin-login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  position: relative;
+}
+
+.admin-login-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(30,145,150,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-12) var(--space-10);
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(30,145,150,0.1);
+  animation: scale-in var(--dur-slow) var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--clr-teal-700), transparent);
+}
+
+.login-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(30,145,150,0.2), rgba(43,181,186,0.1));
+  border: 1px solid rgba(30,145,150,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-6);
+}
+
+.login-icon svg {
+  width: 32px;
+  height: 32px;
+  color: var(--clr-teal-400);
+}
+
+.login-card h2 {
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  color: var(--clr-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.login-card > p {
+  font-size: var(--text-sm);
+  color: var(--clr-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.login-form-group {
+  margin-bottom: var(--space-4);
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .login-card { padding: var(--space-8) var(--space-6); }
+}
+
+/* ── Dashboard Content ── */
+.dashboard-section {
+  padding: var(--space-8) var(--space-6) var(--space-24);
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dashboard top bar ── */
+.dashboard-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.dashboard-topbar h2 {
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  color: var(--clr-text-primary);
+}
+
+.dashboard-topbar p {
+  font-size: var(--text-sm);
+  color: var(--clr-text-muted);
+  margin-top: var(--space-1);
+}
+
+.topbar-right {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+/* Amount in table */
+.amount-strong {
+  font-weight: 800;
+  color: var(--clr-teal-300);
+}
+
+/* Date in table */
+.date-cell {
+  color: var(--clr-text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* Phone in table */
+.phone-cell {
+  direction: ltr;
+  color: var(--clr-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* Name */
+.name-cell {
+  font-weight: 700;
+  color: var(--clr-text-primary);
+}
+
+/* Modal receipt block */
+.receipt-block {
+  margin-top: var(--space-5);
+}
+
+.receipt-block-label {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.receipt-pdf-wrapper {
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.receipt-pdf-wrapper iframe {
+  width: 100%;
+  height: 420px;
+  border: none;
+  display: block;
+}
+
+.receipt-pdf-download {
+  display: block;
+  text-align: center;
+  padding: var(--space-3);
+  background: rgba(30,145,150,0.08);
+  border-top: 1px solid var(--glass-border);
+  font-size: var(--text-sm);
+  color: var(--clr-teal-400);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-fast);
+}
+
+.receipt-pdf-download:hover {
+  background: rgba(30,145,150,0.15);
+}
