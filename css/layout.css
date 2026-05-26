@@ -1,0 +1,139 @@
+/* ============================================================
+   LAYOUT — Footer, page transitions, background grid
+   ============================================================ */
+
+/* ── Body background grid ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(30,145,150,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,145,150,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+/* ── Footer ── */
+.site-footer {
+  background: rgba(4, 8, 15, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(30, 145, 150, 0.1);
+  padding: var(--space-10) var(--space-6);
+  position: relative;
+}
+
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--clr-teal-900), transparent);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footer-logo img {
+  height: 36px;
+  opacity: 0.7;
+  filter: grayscale(0.3);
+  transition: opacity var(--dur-fast);
+}
+
+.footer-logo img:hover { opacity: 1; }
+
+.footer-center {
+  text-align: center;
+  flex: 1;
+}
+
+.footer-copyright {
+  font-size: var(--text-sm);
+  color: var(--clr-text-muted);
+}
+
+.footer-tagline {
+  font-size: var(--text-xs);
+  color: rgba(150, 180, 210, 0.35);
+  margin-top: var(--space-1);
+}
+
+.footer-links {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.footer-links a {
+  font-size: var(--text-xs);
+  color: var(--clr-text-muted);
+  text-decoration: none;
+  transition: color var(--dur-fast);
+}
+
+.footer-links a:hover { color: var(--clr-teal-400); }
+
+@media (max-width: 600px) {
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .footer-links { justify-content: center; }
+  .footer-logo { justify-content: center; }
+}
+
+/* ── Page transition fade ── */
+.page {
+  animation: fade-in var(--dur-base) var(--ease-out);
+}
+
+/* ── Spacing between sections ── */
+.sep {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(30,145,150,0.15), transparent);
+  margin: 0 var(--space-6);
+}
+
+/* ── Loading spinner ── */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--clr-teal-400);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ── Section padding ── */
+.section-padded {
+  padding-block: var(--space-24);
+}
+
+/* ── Max width container variants ── */
+.container-md {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+/* ── Sticky top padding for fixed nav ── */
+.nav-spacer {
+  height: 72px;
+}

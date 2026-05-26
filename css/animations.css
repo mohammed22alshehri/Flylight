@@ -1,0 +1,164 @@
+/* ============================================================
+   ANIMATIONS — Keyframes & scroll-reveal
+   ============================================================ */
+
+/* ── Orb pulsing ── */
+@keyframes orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -40px) scale(1.08); }
+  66%       { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(-40px, 30px) scale(1.12); }
+  70%       { transform: translate(25px, -20px) scale(0.9); }
+}
+
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, 40px) scale(1.05); }
+}
+
+/* ── Shimmer scan line ── */
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ── Fade-in from below ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Fade-in ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Scale pop ── */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Badge shine ── */
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(30, 145, 150, 0.3); }
+  50%       { box-shadow: 0 0 24px rgba(43, 181, 186, 0.6); }
+}
+
+/* ── Progress bar fill ── */
+@keyframes bar-fill {
+  from { width: 0; }
+  to   { width: var(--bar-pct, 0%); }
+}
+
+/* ── Toast slide-in ── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Spin ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Scroll-reveal util classes ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity var(--dur-slow) var(--ease-out),
+              transform var(--dur-slow) var(--ease-out);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(32px);
+  transition: opacity var(--dur-slow) var(--ease-out),
+              transform var(--dur-slow) var(--ease-out);
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger delays */
+.reveal-d1 { transition-delay: 0.05s; }
+.reveal-d2 { transition-delay: 0.10s; }
+.reveal-d3 { transition-delay: 0.15s; }
+.reveal-d4 { transition-delay: 0.20s; }
+.reveal-d5 { transition-delay: 0.25s; }
+.reveal-d6 { transition-delay: 0.30s; }
+
+/* ── Hero entry ── */
+.hero-content > * {
+  animation: fade-up var(--dur-slower) var(--ease-out) both;
+}
+.hero-content > *:nth-child(1) { animation-delay: 0.1s; }
+.hero-content > *:nth-child(2) { animation-delay: 0.25s; }
+.hero-content > *:nth-child(3) { animation-delay: 0.40s; }
+.hero-content > *:nth-child(4) { animation-delay: 0.55s; }
+
+/* ── Typing cursor ── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.typing-cursor::after {
+  content: '|';
+  display: inline-block;
+  animation: cursor-blink 1s step-end infinite;
+  color: var(--clr-teal-500);
+  margin-right: 2px;
+}
+
+/* ── Orb container ── */
+.orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  border-radius: var(--radius-full);
+  filter: blur(90px);
+  will-change: transform;
+}
+
+.orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(30, 145, 150, 0.3) 0%, transparent 70%);
+  top: -200px;
+  right: -150px;
+  animation: orb-float 18s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(20, 54, 92, 0.5) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+  animation: orb-float-2 22s ease-in-out infinite;
+}
+
+.orb-3 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: orb-float-3 15s ease-in-out infinite;
+}
