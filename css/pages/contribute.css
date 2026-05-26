@@ -1,16 +1,21 @@
 /* ============================================================
-   CONTRIBUTE PAGE (LIGHT THEME)
+   CONTRIBUTE PAGE
    ============================================================ */
 
 .contribute-section {
   padding: var(--space-12) var(--space-6) var(--space-24);
 }
 
-/* IBAN Bank Card (kept dark for premium card feel) */
+/* ============================================================
+   IBAN BANK CARD — redesigned to look like a real bank card
+   - Bank name at top (clearly visible)
+   - Chip + IBAN number in middle
+   - Copy button full-width at bottom
+   ============================================================ */
 .iban-card {
   background: linear-gradient(135deg, #0D6C70 0%, #14365C 50%, #0A1C33 100%);
   border-radius: var(--radius-xl);
-  padding: var(--space-6) var(--space-8);
+  padding: var(--space-6) var(--space-6) var(--space-4);
   margin-bottom: var(--space-8);
   position: relative;
   overflow: hidden;
@@ -21,6 +26,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
+/* Decorative shine */
 .iban-card::before {
   content: '';
   position: absolute;
@@ -32,6 +38,7 @@
   pointer-events: none;
 }
 
+/* Decorative ring */
 .iban-card::after {
   content: '';
   position: absolute;
@@ -44,68 +51,250 @@
   pointer-events: none;
 }
 
-.iban-chip {
-  position: absolute;
-  top: var(--space-6);
-  left: var(--space-8);
-  width: 42px;
-  height: 32px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #c9a227, #f0c84b);
-  opacity: 0.9;
-}
-
-.iban-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: var(--space-5);
+/* ── Bank header (top) ──────────────────────────────────────── */
+.iban-bank-header {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: var(--space-5);
 }
-
-.iban-card-info { flex: 1; }
 
 .iban-label {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: var(--space-2);
+  font-size: 1.125rem;
+  color: #fff !important;
+  font-weight: 800;
+  margin: 0 0 var(--space-1) 0;
+  letter-spacing: 0.02em;
 }
 
-.iban-label svg { width: 14px; height: 14px; }
+.iban-label svg {
+  width: 20px;
+  height: 20px;
+  color: var(--clr-teal-300);
+}
 
-.iban-bank-name {
-  font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 700;
+.iban-bank-owner {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-weight: 500;
+  margin: 0;
+  padding-right: 28px; /* align under bank name text */
+}
+
+/* ── Middle: chip + IBAN ────────────────────────────────────── */
+.iban-middle {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.iban-chip {
+  width: 44px;
+  height: 34px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #c9a227, #f0c84b 50%, #b8902a);
+  flex-shrink: 0;
+  position: relative;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Chip internal lines (mimics SIM chip) */
+.iban-chip::before,
+.iban-chip::after {
+  content: '';
+  position: absolute;
+  background: rgba(0, 0, 0, 0.2);
+}
+.iban-chip::before {
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+.iban-chip::after {
+  top: 8px;
+  bottom: 8px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.iban-number-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.iban-number-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6) !important;
+  margin: 0 0 4px 0;
 }
 
 .iban-number {
-  /* Fluid font size — scales perfectly with screen width */
-  /* On smallest phones (~360px) it shrinks; on desktop it stays bold */
-  font-size: clamp(0.78rem, 4.5vw, 1.4rem);
+  font-size: clamp(0.85rem, 3.5vw, 1.35rem);
   font-weight: 800;
-  color: #fff;
-  letter-spacing: 0;
+  color: #fff !important;
+  letter-spacing: 0.04em;
   direction: ltr;
-  margin-top: var(--space-3);
-  position: relative;
-  z-index: 1;
   font-family: 'SF Mono', 'Courier New', monospace;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
-  display: block;
-  max-width: 100%;
-  text-align: center;
+  margin: 0;
 }
 
-/* Steps */
+/* ── Copy button (full width, at bottom) ────────────────────── */
+.btn-copy-full {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-copy-full:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn-copy-full:active {
+  transform: scale(0.98);
+}
+
+.btn-copy-full.copied {
+  background: rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.55);
+}
+
+/* ============================================================
+   AMOUNT STEPPER — Plus/Minus buttons around input
+   Increments/decrements by 50 (matches the share calculator)
+   ============================================================ */
+.amount-stepper {
+  display: flex;
+  align-items: stretch;
+  background: var(--clr-cream-50);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.amount-stepper:focus-within {
+  border-color: var(--clr-teal-500);
+  box-shadow: 0 0 0 3px rgba(30, 145, 150, 0.12);
+  background: #fff;
+}
+
+.amount-stepper-btn {
+  width: 56px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg,
+    rgba(30, 145, 150, 0.08) 0%,
+    rgba(30, 145, 150, 0.04) 100%);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--clr-teal-700);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.amount-stepper-btn:hover {
+  background: linear-gradient(180deg,
+    rgba(30, 145, 150, 0.18) 0%,
+    rgba(30, 145, 150, 0.10) 100%);
+  color: var(--clr-teal-900);
+}
+
+.amount-stepper-btn:active {
+  background: rgba(30, 145, 150, 0.25);
+}
+
+.amount-stepper-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.amount-stepper-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--clr-border);
+  border-right: 1px solid var(--clr-border);
+}
+
+.amount-stepper-input-wrap input[type="number"] {
+  width: 100%;
+  text-align: center;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+  padding: 0.875rem 3.2rem 0.875rem 0.5rem;
+  font-family: var(--font-body);
+  -moz-appearance: textfield;
+}
+
+.amount-stepper-input-wrap input[type="number"]::-webkit-outer-spin-button,
+.amount-stepper-input-wrap input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.amount-stepper-suffix {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--clr-teal-700);
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   Steps + Share Calculator (unchanged)
+   ============================================================ */
 .steps-row {
   display: flex;
   gap: var(--space-6);
@@ -180,24 +369,38 @@
   margin-right: var(--space-2);
 }
 
+/* ============================================================
+   Responsive
+   ============================================================ */
 @media (max-width: 600px) {
   .iban-card {
-    padding: var(--space-5) var(--space-4);
-    overflow: hidden;
+    padding: var(--space-5) var(--space-5) var(--space-4);
   }
-  .iban-card-top {
-    flex-direction: row;
-    gap: var(--space-3);
-    align-items: center;
-    justify-content: space-between;
+  .iban-label {
+    font-size: 1rem;
   }
-  .iban-card-top .iban-bank-name {
-    font-size: 0.78rem;
+  .iban-chip {
+    width: 38px;
+    height: 28px;
   }
   .iban-number {
-    margin-top: var(--space-4);
-    text-align: left;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
   }
   .steps-row { flex-direction: column; gap: var(--space-4); }
-  .iban-chip { display: none; }
+
+  .amount-stepper-btn {
+    width: 48px;
+    font-size: 1.4rem;
+  }
+  .amount-stepper-input-wrap input[type="number"] {
+    font-size: 1.25rem;
+    padding: 0.75rem 2.8rem 0.75rem 0.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .iban-number {
+    font-size: 0.75rem;
+  }
 }
