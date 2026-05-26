@@ -1,0 +1,210 @@
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              background var(--dur-fast);
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+
+/* Shimmer on hover */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: none;
+}
+.btn:hover::after {
+  animation: shimmer 0.6s linear;
+}
+
+/* ── Primary (teal gradient) ── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--clr-teal-700) 0%, var(--clr-teal-500) 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(30, 145, 150, 0.35);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 28px rgba(43, 181, 186, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ── Glass ── */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--clr-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(30, 145, 150, 0.4);
+  box-shadow: var(--shadow-teal-sm);
+  transform: translateY(-2px);
+}
+
+/* ── Outline ── */
+.btn-outline {
+  background: transparent;
+  color: var(--clr-teal-500);
+  border: 1px solid var(--clr-teal-700);
+}
+
+.btn-outline:hover {
+  background: rgba(30, 145, 150, 0.1);
+  border-color: var(--clr-teal-500);
+}
+
+/* ── Ghost ── */
+.btn-ghost {
+  background: transparent;
+  color: var(--clr-text-secondary);
+}
+.btn-ghost:hover {
+  color: var(--clr-text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Danger ── */
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
+}
+
+/* ── Success ── */
+.btn-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.btn-success:hover {
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+}
+
+/* ── Sizes ── */
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.btn-lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+}
+
+.btn-block { width: 100%; }
+
+/* ── Icon-only ── */
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border-light);
+  color: var(--clr-text-secondary);
+  flex-shrink: 0;
+}
+.btn-icon:hover {
+  background: rgba(30, 145, 150, 0.15);
+  color: var(--clr-text-primary);
+  border-color: var(--glass-border);
+}
+
+/* ── Copy button ── */
+.btn-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background var(--dur-fast), transform var(--dur-fast);
+  white-space: nowrap;
+}
+.btn-copy:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.04);
+}
+.btn-copy.copied {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* ── Refresh / Logout small buttons ── */
+.btn-sm-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--clr-text-secondary);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.btn-sm-action:hover {
+  background: rgba(30, 145, 150, 0.12);
+  color: var(--clr-text-primary);
+  border-color: var(--clr-border);
+}
+
+/* approve / reject inline */
+.btn-approve {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.btn-approve:hover {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+.btn-reject {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+}
+.btn-reject:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
