@@ -14,6 +14,25 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+iban-bank-owner {
+   font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 400;
+    line-height: 1.7;
+    color: #ffffff;
+}
+
+
+btn-copy-full {
+   button {
+    font-family: var(--font-body);
+    cursor: pointer;
+    border: none;
+    COLOR: azure;
+    background: none;
+}
+}
+
 body {
   font-family: var(--font-body);
   font-size: var(--text-base);
