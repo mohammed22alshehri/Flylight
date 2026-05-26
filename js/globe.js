@@ -1,68 +1,65 @@
 /* ============================================================
-   GLOBE — Lightweight pure-canvas globe (no external library)
-   Shows Fly Light's global shipping network with rotating dots
+   GLOBE — Pure canvas globe (no external library)
+   Shows Fly Light's global shipping network
    ============================================================ */
 
 function initGlobe(canvasId) {
   const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
+  if (!canvas) {
+    console.warn('Globe: canvas not found');
+    return;
+  }
 
   const ctx = canvas.getContext('2d');
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  // Fly Light shipping network cities (lat, lng, label)
+  // Fly Light cities (lat, lng)
   const cities = [
-    { lat: 24.7136, lng: 46.6753, name: 'الرياض',     primary: true },
-    { lat: 24.0889, lng: 38.0617, name: 'ينبع',       primary: true },
-    { lat: 21.4858, lng: 39.1925, name: 'جدة',        primary: true },
-    { lat: 25.2048, lng: 55.2708, name: 'دبي' },
-    { lat: 30.0444, lng: 31.2357, name: 'القاهرة' },
-    { lat: 41.0082, lng: 28.9784, name: 'إسطنبول' },
-    { lat: 51.5074, lng: -0.1278, name: 'لندن' },
-    { lat: 40.7128, lng: -74.006, name: 'نيويورك' },
-    { lat: 35.6762, lng: 139.6503, name: 'طوكيو' },
-    { lat: 1.3521, lng: 103.8198, name: 'سنغافورة' },
-    { lat: 19.4326, lng: -99.1332, name: 'مكسيكو' },
-    { lat: -33.8688, lng: 151.2093, name: 'سيدني' },
-    { lat: -23.5505, lng: -46.6333, name: 'ساو باولو' },
+    { lat: 24.7136, lng: 46.6753, primary: true },   // الرياض
+    { lat: 24.0889, lng: 38.0617, primary: true },   // ينبع
+    { lat: 21.4858, lng: 39.1925, primary: true },   // جدة
+    { lat: 25.2048, lng: 55.2708 },                  // دبي
+    { lat: 30.0444, lng: 31.2357 },                  // القاهرة
+    { lat: 41.0082, lng: 28.9784 },                  // إسطنبول
+    { lat: 51.5074, lng: -0.1278 },                  // لندن
+    { lat: 40.7128, lng: -74.006 },                  // نيويورك
+    { lat: 35.6762, lng: 139.6503 },                 // طوكيو
+    { lat: 1.3521,  lng: 103.8198 },                 // سنغافورة
+    { lat: 19.4326, lng: -99.1332 },                 // مكسيكو
+    { lat: -33.8688, lng: 151.2093 },                // سيدني
+    { lat: -23.5505, lng: -46.6333 },                // ساو باولو
   ];
 
-  // Shipping arcs (from → to indexes in cities)
   const arcs = [
-    [0, 3], // Riyadh → Dubai
-    [1, 6], // Yanbu → London
-    [2, 5], // Jeddah → Istanbul
-    [0, 8], // Riyadh → Tokyo
-    [3, 7], // Dubai → NYC
-    [2, 9], // Jeddah → Singapore
+    [0, 3], [1, 6], [2, 5], [0, 8], [3, 7], [2, 9]
   ];
 
   let rotation = 0;
-  let size = 0;
-  let center = { x: 0, y: 0 };
-  let radius = 0;
+  let size = 320;
+  let center = { x: 160, y: 160 };
+  let radius = 140;
+  let animating = false;
+  let initialized = false;
 
-  function resize() {
-    const rect = canvas.getBoundingClientRect();
-    size = Math.min(rect.width, rect.height);
-    canvas.width = size * dpr;
+  function setup(w) {
+    size = w;
+    canvas.width  = size * dpr;
     canvas.height = size * dpr;
-    canvas.style.width = size + 'px';
+    canvas.style.width  = size + 'px';
     canvas.style.height = size + 'px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
     ctx.scale(dpr, dpr);
     center = { x: size / 2, y: size / 2 };
     radius = size * 0.44;
+    initialized = true;
   }
 
   function project(lat, lng) {
-    // Convert lat/lng to 3D point, then to 2D screen
     const latRad = (lat * Math.PI) / 180;
-    const lngRad = ((lng * Math.PI) / 180) + rotation;
-
+    const lngRad = (lng * Math.PI) / 180 + rotation;
     const x = Math.cos(latRad) * Math.sin(lngRad);
     const y = -Math.sin(latRad);
     const z = Math.cos(latRad) * Math.cos(lngRad);
-
     return {
       x: center.x + x * radius,
       y: center.y + y * radius * 0.95,
@@ -71,46 +68,50 @@ function initGlobe(canvasId) {
     };
   }
 
-  function drawGlobe() {
+  function draw() {
+    if (!initialized || size === 0) return;
     ctx.clearRect(0, 0, size, size);
 
-    // ── 1. Sphere base with soft gradient ──
+    // ── Sphere base ──
     const sphereGrad = ctx.createRadialGradient(
       center.x - radius * 0.3, center.y - radius * 0.3, radius * 0.1,
       center.x, center.y, radius * 1.1
     );
-    sphereGrad.addColorStop(0,    '#FFFFFF');
-    sphereGrad.addColorStop(0.6,  '#F0F7F9');
-    sphereGrad.addColorStop(1,    '#DCEEF1');
+    sphereGrad.addColorStop(0, '#FFFFFF');
+    sphereGrad.addColorStop(0.6, '#F0F7F9');
+    sphereGrad.addColorStop(1, '#DCEEF1');
 
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
     ctx.fillStyle = sphereGrad;
     ctx.fill();
 
-    // Sphere outline
+    // Outline
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(30, 145, 150, 0.25)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(30, 145, 150, 0.3)';
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // ── 2. Latitude lines ──
-    ctx.strokeStyle = 'rgba(30, 145, 150, 0.1)';
-    ctx.lineWidth = 0.6;
+    // ── Latitude lines ──
+    ctx.strokeStyle = 'rgba(30, 145, 150, 0.15)';
+    ctx.lineWidth = 0.7;
     for (let lat = -60; lat <= 60; lat += 30) {
       ctx.beginPath();
+      let started = false;
       for (let lng = -180; lng <= 180; lng += 5) {
         const p = project(lat, lng);
         if (p.visible) {
-          if (lng === -180) ctx.moveTo(p.x, p.y);
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
           else ctx.lineTo(p.x, p.y);
+        } else {
+          started = false;
         }
       }
       ctx.stroke();
     }
 
-    // ── 3. Longitude lines ──
+    // ── Longitude lines ──
     for (let lng = 0; lng < 360; lng += 30) {
       ctx.beginPath();
       let started = false;
@@ -126,49 +127,44 @@ function initGlobe(canvasId) {
       ctx.stroke();
     }
 
-    // ── 4. Draw arcs (shipping routes) ──
+    // ── Arcs (shipping routes) ──
     arcs.forEach(([fromIdx, toIdx], arcIdx) => {
       const from = cities[fromIdx];
       const to = cities[toIdx];
       const fromP = project(from.lat, from.lng);
       const toP = project(to.lat, to.lng);
-
       if (!fromP.visible && !toP.visible) return;
 
-      // Arc curve via control point above midpoint
       const midX = (fromP.x + toP.x) / 2;
       const midY = (fromP.y + toP.y) / 2;
       const dx = toP.x - fromP.x;
       const dy = toP.y - fromP.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const controlY = midY - dist * 0.35;
-
-      // Animated dash flow along the arc
-      const dashOffset = -((Date.now() / 30 + arcIdx * 50) % 60);
+      const dashOffset = -((Date.now() / 30 + arcIdx * 40) % 60);
 
       ctx.beginPath();
       ctx.moveTo(fromP.x, fromP.y);
       ctx.quadraticCurveTo(midX, controlY, toP.x, toP.y);
-      ctx.strokeStyle = 'rgba(30, 145, 150, 0.55)';
-      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = 'rgba(30, 145, 150, 0.6)';
+      ctx.lineWidth = 1.5;
       ctx.setLineDash([6, 4]);
       ctx.lineDashOffset = dashOffset;
       ctx.stroke();
       ctx.setLineDash([]);
     });
 
-    // ── 5. Draw city dots ──
+    // ── City dots ──
     cities.forEach((city) => {
       const p = project(city.lat, city.lng);
       if (!p.visible) return;
-
-      const opacity = Math.max(0.3, p.z + 0.3);
+      const opacity = Math.max(0.4, p.z + 0.4);
       const dotSize = city.primary ? 5 : 3.5;
 
       // Glow
       const glowGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, dotSize * 3);
-      glowGrad.addColorStop(0,    `rgba(43, 181, 186, ${opacity * 0.6})`);
-      glowGrad.addColorStop(1,    'rgba(43, 181, 186, 0)');
+      glowGrad.addColorStop(0, `rgba(43, 181, 186, ${opacity * 0.7})`);
+      glowGrad.addColorStop(1, 'rgba(43, 181, 186, 0)');
       ctx.beginPath();
       ctx.arc(p.x, p.y, dotSize * 3, 0, Math.PI * 2);
       ctx.fillStyle = glowGrad;
@@ -185,55 +181,74 @@ function initGlobe(canvasId) {
       // Inner highlight
       ctx.beginPath();
       ctx.arc(p.x - dotSize * 0.3, p.y - dotSize * 0.3, dotSize * 0.4, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.7})`;
+      ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.8})`;
       ctx.fill();
     });
-
-    // ── 6. Highlight ring around the visible disk ──
-    const rimGrad = ctx.createRadialGradient(
-      center.x, center.y, radius * 0.95,
-      center.x, center.y, radius * 1.05
-    );
-    rimGrad.addColorStop(0,    'rgba(30, 145, 150, 0)');
-    rimGrad.addColorStop(1,    'rgba(30, 145, 150, 0.2)');
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, radius * 1.05, 0, Math.PI * 2);
-    ctx.fillStyle = rimGrad;
-    ctx.fill();
   }
 
-  let animating = false;
   function animate() {
     if (!animating) return;
     rotation += 0.003;
-    drawGlobe();
+    draw();
     requestAnimationFrame(animate);
   }
 
-  // Initialize
-  resize();
-  drawGlobe();
-  canvas.style.opacity = '1';
+  function tryInit() {
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.floor(rect.width);
+    if (w > 0) {
+      setup(w);
+      draw();
+      canvas.style.opacity = '1';
+      if (!animating) {
+        animating = true;
+        animate();
+      }
+      return true;
+    }
+    return false;
+  }
 
-  // Pause animation when off-screen
+  // Initial attempt
+  if (!tryInit()) {
+    // If canvas has 0 width, wait for it to be sized
+    const ro = new ResizeObserver(() => {
+      if (tryInit()) ro.disconnect();
+    });
+    ro.observe(canvas);
+
+    // Fallback: retry after delays
+    setTimeout(() => { if (!initialized) tryInit(); }, 100);
+    setTimeout(() => { if (!initialized) tryInit(); }, 500);
+    setTimeout(() => { if (!initialized) tryInit(); }, 1500);
+  }
+
+  // Handle resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.floor(rect.width);
+      if (w > 0) {
+        setup(w);
+        draw();
+      }
+    }, 200);
+  });
+
+  // Pause when off-screen
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting && !animating) {
+      if (e.isIntersecting && initialized && !animating) {
         animating = true;
         animate();
       } else if (!e.isIntersecting) {
         animating = false;
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.05 });
   io.observe(canvas);
-
-  // Handle resize
-  let rt;
-  window.addEventListener('resize', () => {
-    clearTimeout(rt);
-    rt = setTimeout(() => { resize(); drawGlobe(); }, 200);
-  });
 }
 
-console.log('✅ globe.js loaded (canvas-only)');
+console.log('✅ globe.js loaded');
