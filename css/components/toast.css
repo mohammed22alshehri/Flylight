@@ -1,5 +1,5 @@
 /* ============================================================
-   TOAST NOTIFICATIONS
+   TOAST (LIGHT THEME)
    ============================================================ */
 
 .toast {
@@ -24,7 +24,7 @@
   pointer-events: none;
   white-space: nowrap;
   max-width: calc(100vw - var(--space-8));
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 36px rgba(10, 28, 51, 0.15);
 }
 
 .toast.show {
@@ -35,30 +35,29 @@
 }
 
 .toast-success {
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #34d399;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #047857;
 }
 
 .toast-error {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #f87171;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #b91c1c;
 }
 
 .toast-warning {
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  color: var(--clr-gold-400);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--clr-gold-600);
 }
 
 .toast-info {
-  background: rgba(30, 145, 150, 0.2);
-  border: 1px solid rgba(30, 145, 150, 0.4);
-  color: var(--clr-teal-300);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(30, 145, 150, 0.35);
+  color: var(--clr-teal-900);
 }
 
-/* Toast icon dot */
 .toast::before {
   content: '';
   width: 8px;
@@ -66,10 +65,10 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-.toast-success::before { background: #34d399; box-shadow: 0 0 8px #34d399; }
-.toast-error::before   { background: #f87171; box-shadow: 0 0 8px #f87171; }
-.toast-warning::before { background: var(--clr-gold-400); box-shadow: 0 0 8px var(--clr-gold-400); }
-.toast-info::before    { background: var(--clr-teal-400); box-shadow: 0 0 8px var(--clr-teal-400); }
+.toast-success::before { background: #10b981; box-shadow: 0 0 10px #10b981; }
+.toast-error::before   { background: #dc2626; box-shadow: 0 0 10px #dc2626; }
+.toast-warning::before { background: var(--clr-gold-500); box-shadow: 0 0 10px var(--clr-gold-500); }
+.toast-info::before    { background: var(--clr-teal-500); box-shadow: 0 0 10px var(--clr-teal-500); }
 
 @media (max-width: 480px) {
   .toast {

@@ -1,5 +1,5 @@
 /* ============================================================
-   BUTTONS
+   BUTTONS (LIGHT THEME)
    ============================================================ */
 
 .btn {
@@ -26,7 +26,6 @@
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
 
-/* Shimmer on hover */
 .btn::after {
   content: '';
   position: absolute;
@@ -34,141 +33,132 @@
   left: -100%;
   width: 60%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
   transition: none;
 }
 .btn:hover::after {
   animation: shimmer 0.6s linear;
 }
 
-/* ── Primary (teal gradient) ── */
+/* Primary */
 .btn-primary {
-  background: linear-gradient(135deg, var(--clr-teal-700) 0%, var(--clr-teal-500) 100%);
+  background: linear-gradient(135deg, var(--clr-teal-900) 0%, var(--clr-teal-700) 50%, var(--clr-teal-500) 100%);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(30, 145, 150, 0.35);
+  box-shadow: 0 6px 20px rgba(30, 145, 150, 0.3);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 28px rgba(43, 181, 186, 0.5);
+  box-shadow: 0 10px 28px rgba(43, 181, 186, 0.4);
   transform: translateY(-2px);
 }
 
-/* ── Glass ── */
+/* Glass (light) */
 .btn-glass {
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--clr-text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--clr-teal-900);
+  border: 1px solid var(--clr-border);
+  backdrop-filter: blur(12px);
 }
 
 .btn-glass:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(30, 145, 150, 0.4);
+  background: #fff;
+  border-color: var(--clr-teal-500);
   box-shadow: var(--shadow-teal-sm);
   transform: translateY(-2px);
 }
 
-/* ── Outline ── */
+/* Outline */
 .btn-outline {
   background: transparent;
-  color: var(--clr-teal-500);
+  color: var(--clr-teal-700);
   border: 1px solid var(--clr-teal-700);
 }
 
 .btn-outline:hover {
-  background: rgba(30, 145, 150, 0.1);
+  background: var(--clr-teal-50);
   border-color: var(--clr-teal-500);
 }
 
-/* ── Ghost ── */
+/* Ghost */
 .btn-ghost {
   background: transparent;
   color: var(--clr-text-secondary);
 }
 .btn-ghost:hover {
   color: var(--clr-text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--clr-cream-100);
 }
 
-/* ── Danger ── */
+/* Danger */
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.25);
 }
 .btn-danger:hover {
-  background: rgba(239, 68, 68, 0.25);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
+  background: rgba(220, 38, 38, 0.15);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
 }
 
-/* ── Success ── */
+/* Success */
 .btn-success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 .btn-success:hover {
-  background: rgba(16, 185, 129, 0.25);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
 }
 
-/* ── Sizes ── */
-.btn-sm {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-}
-
-.btn-lg {
-  padding: var(--space-4) var(--space-8);
-  font-size: var(--text-lg);
-}
-
+/* Sizes */
+.btn-sm  { padding: var(--space-2) var(--space-4); font-size: var(--text-xs); }
+.btn-lg  { padding: var(--space-4) var(--space-8); font-size: var(--text-lg); }
 .btn-block { width: 100%; }
 
-/* ── Icon-only ── */
+/* Icon-only */
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   padding: 0;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border-light);
+  background: #fff;
+  border: 1px solid var(--clr-border-2);
   color: var(--clr-text-secondary);
   flex-shrink: 0;
 }
 .btn-icon:hover {
-  background: rgba(30, 145, 150, 0.15);
-  color: var(--clr-text-primary);
-  border-color: var(--glass-border);
+  background: var(--clr-teal-50);
+  color: var(--clr-teal-700);
+  border-color: var(--clr-border);
 }
 
-/* ── Copy button ── */
+/* Copy button — IBAN card */
 .btn-copy {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font-size: var(--text-sm);
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   transition: background var(--dur-fast), transform var(--dur-fast);
   white-space: nowrap;
 }
 .btn-copy:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.3);
   transform: scale(1.04);
 }
 .btn-copy.copied {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.55);
 }
 
-/* ── Refresh / Logout small buttons ── */
+/* Small action buttons */
 .btn-sm-action {
   display: inline-flex;
   align-items: center;
@@ -179,32 +169,39 @@
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
-  border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--clr-border-2);
+  background: #fff;
   color: var(--clr-text-secondary);
   transition: background var(--dur-fast), color var(--dur-fast);
 }
 .btn-sm-action:hover {
-  background: rgba(30, 145, 150, 0.12);
-  color: var(--clr-text-primary);
+  background: var(--clr-teal-50);
+  color: var(--clr-teal-700);
   border-color: var(--clr-border);
 }
+.btn-sm-action.btn-reject {
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, 0.18);
+}
+.btn-sm-action.btn-reject:hover {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.3);
+}
 
-/* approve / reject inline */
 .btn-approve {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.25);
 }
 .btn-approve:hover {
-  background: rgba(16, 185, 129, 0.22);
+  background: rgba(16, 185, 129, 0.2);
 }
 
 .btn-reject {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.22);
+  background: rgba(220, 38, 38, 0.06);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.2);
 }
 .btn-reject:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(220, 38, 38, 0.14);
 }

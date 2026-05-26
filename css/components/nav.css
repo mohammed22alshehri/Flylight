@@ -1,12 +1,10 @@
 /* ============================================================
-   NAV — Cinematic glassmorphism header
+   NAV — Light glassmorphism header
    ============================================================ */
 
 .site-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   z-index: var(--z-nav);
   padding: var(--space-4) 0;
   transition: background var(--dur-base) var(--ease-out),
@@ -15,15 +13,14 @@
 }
 
 .site-header.scrolled {
-  background: rgba(4, 8, 15, 0.85);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
   box-shadow: var(--shadow-nav);
   padding: var(--space-3) 0;
-  border-bottom: 1px solid rgba(30, 145, 150, 0.12);
+  border-bottom: 1px solid var(--clr-border);
 }
 
-/* ── Nav inner ── */
 .nav-inner {
   display: flex;
   align-items: center;
@@ -33,7 +30,6 @@
   padding-inline: var(--space-6);
 }
 
-/* ── Logo ── */
 .nav-logo {
   display: flex;
   align-items: center;
@@ -45,17 +41,16 @@
 .nav-logo-img {
   height: 48px;
   width: auto;
-  filter: drop-shadow(0 0 12px rgba(30, 145, 150, 0.4));
+  filter: drop-shadow(0 2px 8px rgba(30, 145, 150, 0.15));
   transition: filter var(--dur-base) var(--ease-out),
               transform var(--dur-base) var(--ease-out);
 }
 
 .nav-logo:hover .nav-logo-img {
-  filter: drop-shadow(0 0 20px rgba(43, 181, 186, 0.7));
+  filter: drop-shadow(0 4px 16px rgba(30, 145, 150, 0.35));
   transform: scale(1.04);
 }
 
-/* ── Nav links ── */
 .nav-links {
   display: flex;
   align-items: center;
@@ -87,19 +82,18 @@
 }
 
 .nav-link:hover {
-  color: var(--clr-text-primary);
-  background: rgba(30, 145, 150, 0.1);
+  color: var(--clr-teal-700);
+  background: rgba(30, 145, 150, 0.08);
 }
 .nav-link:hover svg { opacity: 1; }
 
 .nav-link.active {
-  color: var(--clr-teal-300);
-  background: rgba(30, 145, 150, 0.15);
+  color: var(--clr-teal-700);
+  background: rgba(30, 145, 150, 0.12);
 }
 
 .nav-link.active svg { opacity: 1; }
 
-/* Active indicator dot */
 .nav-link.active::after {
   content: '';
   position: absolute;
@@ -113,7 +107,7 @@
   box-shadow: 0 0 8px var(--clr-teal-500);
 }
 
-/* ── Hamburger ── */
+/* Hamburger */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -123,39 +117,31 @@
   height: 42px;
   gap: 5px;
   cursor: pointer;
-  background: rgba(30, 145, 150, 0.1);
-  border: 1px solid rgba(30, 145, 150, 0.2);
+  background: rgba(30, 145, 150, 0.08);
+  border: 1px solid var(--clr-border);
   border-radius: var(--radius-md);
   transition: background var(--dur-fast);
   flex-shrink: 0;
 }
 
 .hamburger:hover {
-  background: rgba(30, 145, 150, 0.2);
+  background: rgba(30, 145, 150, 0.15);
 }
 
 .hamburger span {
   display: block;
   width: 20px;
   height: 2px;
-  background: var(--clr-text-primary);
+  background: var(--clr-teal-900);
   border-radius: 2px;
   transition: transform var(--dur-base) var(--ease-out),
               opacity var(--dur-fast);
 }
 
-.hamburger.open span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-.hamburger.open span:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.hamburger.open span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* ── Mobile ── */
 @media (max-width: 768px) {
   .hamburger { display: flex; }
 
@@ -164,14 +150,15 @@
     top: 72px;
     right: 0;
     left: 0;
-    background: rgba(4, 8, 15, 0.96);
+    background: rgba(255, 255, 255, 0.97);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     flex-direction: column;
     align-items: stretch;
     gap: 0;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--clr-border);
+    box-shadow: 0 8px 24px rgba(10, 28, 51, 0.08);
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;

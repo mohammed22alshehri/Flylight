@@ -1,8 +1,7 @@
 /* ============================================================
-   CARDS — Service, Value, Stat cards
+   CARDS (LIGHT THEME)
    ============================================================ */
 
-/* ── Base Card ── */
 .card {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -22,26 +21,25 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(30,145,150,0.05) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(30, 145, 150, 0.03) 0%, transparent 60%);
   pointer-events: none;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.5), var(--shadow-teal-sm);
+  box-shadow: var(--shadow-card-lg);
   border-color: rgba(30, 145, 150, 0.35);
 }
 
-/* ── Service Card (Bento) ── */
+/* ── Service Card ── */
 .service-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: 1px solid var(--clr-border-2);
   border-radius: var(--radius-xl);
   padding: var(--space-8);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
   transition: transform var(--dur-base) var(--ease-out),
               box-shadow var(--dur-base) var(--ease-out),
               border-color var(--dur-base);
@@ -51,36 +49,33 @@
   content: '';
   position: absolute;
   top: 0; right: 0;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(30,145,150,0.15) 0%, transparent 70%);
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(30, 145, 150, 0.1) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .service-card:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(43,181,186,0.25);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card-lg), 0 0 0 1px rgba(43, 181, 186, 0.25);
   border-color: rgba(43, 181, 186, 0.3);
 }
 
-/* Featured (2×2 in bento grid) */
 .service-card.featured {
-  background: linear-gradient(145deg, rgba(13, 108, 112, 0.35), rgba(10, 28, 51, 0.6));
+  background: linear-gradient(145deg, #fff 0%, var(--clr-teal-50) 100%);
   border-color: rgba(43, 181, 186, 0.25);
 }
 
 .service-card.featured::before {
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(43,181,186,0.2) 0%, transparent 70%);
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(43, 181, 186, 0.15) 0%, transparent 70%);
 }
 
 .service-icon {
   width: 52px;
   height: 52px;
   border-radius: var(--radius-lg);
-  background: rgba(30, 145, 150, 0.15);
-  border: 1px solid rgba(30, 145, 150, 0.25);
+  background: linear-gradient(135deg, var(--clr-teal-50), rgba(30, 145, 150, 0.1));
+  border: 1px solid rgba(30, 145, 150, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,14 +84,14 @@
 }
 
 .service-card:hover .service-icon {
-  background: rgba(30, 145, 150, 0.25);
-  box-shadow: 0 0 20px rgba(30, 145, 150, 0.3);
+  background: linear-gradient(135deg, var(--clr-teal-100), rgba(30, 145, 150, 0.2));
+  box-shadow: var(--shadow-teal-sm);
 }
 
 .service-icon svg {
   width: 24px;
   height: 24px;
-  color: var(--clr-teal-400);
+  color: var(--clr-teal-700);
 }
 
 .service-card h3 {
@@ -116,30 +111,33 @@
   line-height: 1.7;
 }
 
-/* ── Value / Feature Card ── */
+/* ── Value Card ── */
 .value-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #fff;
+  border: 1px solid var(--clr-border-2);
   border-radius: var(--radius-xl);
   padding: var(--space-8);
   text-align: center;
+  box-shadow: var(--shadow-card);
   transition: transform var(--dur-base) var(--ease-out),
               background var(--dur-base),
-              border-color var(--dur-base);
+              border-color var(--dur-base),
+              box-shadow var(--dur-base);
 }
 
 .value-card:hover {
-  background: rgba(30, 145, 150, 0.07);
-  border-color: rgba(30, 145, 150, 0.2);
+  background: linear-gradient(180deg, #fff 0%, var(--clr-teal-50) 100%);
+  border-color: rgba(30, 145, 150, 0.25);
   transform: translateY(-4px);
+  box-shadow: var(--shadow-card-lg);
 }
 
 .value-icon {
   width: 64px;
   height: 64px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgba(30,145,150,0.2), rgba(43,181,186,0.1));
-  border: 1px solid rgba(30,145,150,0.25);
+  background: linear-gradient(135deg, var(--clr-teal-50), rgba(43, 181, 186, 0.1));
+  border: 1px solid rgba(30, 145, 150, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,7 +147,7 @@
 .value-icon svg {
   width: 28px;
   height: 28px;
-  color: var(--clr-teal-400);
+  color: var(--clr-teal-700);
 }
 
 .value-card h3 {
@@ -167,10 +165,8 @@
 
 /* ── Stat Card ── */
 .stat-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: 1px solid var(--clr-border-2);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
   display: flex;
@@ -178,12 +174,14 @@
   gap: var(--space-5);
   position: relative;
   overflow: hidden;
-  transition: transform var(--dur-base), border-color var(--dur-base);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--dur-base), border-color var(--dur-base), box-shadow var(--dur-base);
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(30,145,150,0.3);
+  border-color: rgba(30, 145, 150, 0.3);
+  box-shadow: var(--shadow-card-lg);
 }
 
 .stat-icon {
@@ -201,11 +199,10 @@
   height: 22px;
 }
 
-/* Stat type variants */
-.stat-total .stat-icon  { background: rgba(30,145,150,0.2); color: var(--clr-teal-400); border: 1px solid rgba(30,145,150,0.3); }
-.stat-money .stat-icon  { background: rgba(245,158,11,0.15); color: var(--clr-gold-400); border: 1px solid rgba(245,158,11,0.25); }
-.stat-pending .stat-icon { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25); }
-.stat-approved .stat-icon{ background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+.stat-total .stat-icon   { background: rgba(30, 145, 150, 0.1);  color: var(--clr-teal-700); border: 1px solid rgba(30, 145, 150, 0.2); }
+.stat-money .stat-icon   { background: rgba(245, 158, 11, 0.1);  color: var(--clr-gold-600); border: 1px solid rgba(245, 158, 11, 0.2); }
+.stat-pending .stat-icon { background: rgba(99, 102, 241, 0.08); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.2); }
+.stat-approved .stat-icon{ background: rgba(16, 185, 129, 0.1);  color: #047857; border: 1px solid rgba(16, 185, 129, 0.2); }
 
 .stat-info { flex: 1; min-width: 0; }
 
@@ -223,18 +220,15 @@
   font-weight: 500;
 }
 
-/* Accent line at top */
-.stat-total  { border-top: 2px solid var(--clr-teal-700); }
-.stat-money  { border-top: 2px solid var(--clr-gold-500); }
-.stat-pending { border-top: 2px solid #6366f1; }
-.stat-approved{ border-top: 2px solid #10b981; }
+.stat-total    { border-top: 3px solid var(--clr-teal-700); }
+.stat-money    { border-top: 3px solid var(--clr-gold-500); }
+.stat-pending  { border-top: 3px solid #6366f1; }
+.stat-approved { border-top: 3px solid #10b981; }
 
 /* ── Table Card ── */
 .table-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: 1px solid var(--clr-border-2);
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -245,9 +239,10 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-5) var(--space-6);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--clr-border-2);
   gap: var(--space-4);
   flex-wrap: wrap;
+  background: linear-gradient(180deg, var(--clr-cream-100), transparent);
 }
 
 .table-header h3 {
@@ -262,7 +257,7 @@
 .table-header h3 svg {
   width: 18px;
   height: 18px;
-  color: var(--clr-teal-500);
+  color: var(--clr-teal-700);
 }
 
 .table-actions {
@@ -283,8 +278,8 @@ table {
 }
 
 thead tr {
-  background: rgba(30, 145, 150, 0.06);
-  border-bottom: 1px solid var(--glass-border);
+  background: var(--clr-cream-100);
+  border-bottom: 1px solid var(--clr-border-2);
 }
 
 thead th {
@@ -299,14 +294,14 @@ thead th {
 }
 
 tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--clr-border-2);
   transition: background var(--dur-fast);
 }
 
 tbody tr:last-child { border-bottom: none; }
 
 tbody tr:hover {
-  background: rgba(30, 145, 150, 0.05);
+  background: var(--clr-cream-100);
 }
 
 tbody td {
@@ -339,14 +334,14 @@ tbody td {
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
-  border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--clr-border-2);
+  background: #fff;
   color: var(--clr-text-secondary);
   transition: all var(--dur-fast);
   white-space: nowrap;
 }
-.action-btn:hover { background: rgba(255,255,255,0.1); color: var(--clr-text-primary); }
-.action-btn.btn-approve { background: rgba(16,185,129,0.1); color: #34d399; border-color: rgba(16,185,129,0.2); }
-.action-btn.btn-approve:hover { background: rgba(16,185,129,0.2); }
-.action-btn.btn-reject { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.2); }
-.action-btn.btn-reject:hover { background: rgba(239,68,68,0.2); }
+.action-btn:hover { background: var(--clr-cream-100); color: var(--clr-teal-700); }
+.action-btn.btn-approve { background: rgba(16, 185, 129, 0.08); color: #047857; border-color: rgba(16, 185, 129, 0.25); }
+.action-btn.btn-approve:hover { background: rgba(16, 185, 129, 0.16); }
+.action-btn.btn-reject { background: rgba(220, 38, 38, 0.06); color: #b91c1c; border-color: rgba(220, 38, 38, 0.2); }
+.action-btn.btn-reject:hover { background: rgba(220, 38, 38, 0.12); }
