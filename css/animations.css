@@ -132,8 +132,7 @@
 .orb {
   position: absolute;
   border-radius: var(--radius-full);
-  filter: blur(90px);
-  will-change: transform;
+  filter: blur(60px);
 }
 
 .orb-1 {
