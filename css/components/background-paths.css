@@ -41,16 +41,13 @@
   z-index: 2;
 }
 
-/* ── SVG container — STATIC, no animation on paths ──────────── */
+/* ── SVG container with flowing paths animation ─────────────── */
 .bg-paths-container {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  /* Single gentle drift animation on the whole SVG (GPU-accelerated) */
-  animation: bg-drift 30s ease-in-out infinite;
-  will-change: transform;
 }
 
 .bg-paths-svg {
@@ -60,9 +57,16 @@
   height: 100%;
 }
 
-@keyframes bg-drift {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(-2%, -1%); }
+/* Each path flows along its length (stroke-dashoffset animation) */
+.bg-path {
+  animation: path-flow linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes path-flow {
+  0%   { stroke-dashoffset: 0; opacity: 0.5; }
+  50%  { opacity: 1; }
+  100% { stroke-dashoffset: -100; opacity: 0.5; }
 }
 
 /* ── Content ─────────────────────────────────────────────────── */
