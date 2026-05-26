@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="css/components/badges.css">
   <link rel="stylesheet" href="css/components/modal.css">
   <link rel="stylesheet" href="css/components/toast.css">
+  <link rel="stylesheet" href="css/components/background-paths.css">
 
   <!-- CSS — Pages -->
   <link rel="stylesheet" href="css/pages/home.css">
@@ -84,48 +85,33 @@
          ======================================== -->
     <div id="home" class="page active">
 
-      <!-- Hero -->
-      <section class="hero noise" aria-label="Hero section">
-        <!-- Ambient orbs -->
-        <div class="orbs">
-          <div class="orb orb-1"></div>
-          <div class="orb orb-2"></div>
-          <div class="orb orb-3"></div>
-        </div>
+      <!-- Hero — Light Cinematic with Background Paths -->
+      <section class="hero-light" aria-label="Hero section">
 
-        <!-- Particle canvas -->
-        <canvas id="hero-canvas" aria-hidden="true"></canvas>
-
-        <!-- Background image -->
-        <div class="hero-bg-image" aria-hidden="true">
-          <img src="good_pic.jpg" alt="" loading="eager">
-        </div>
-        <div class="hero-gradient" aria-hidden="true"></div>
+        <!-- Animated SVG paths (injected by background-paths.js) -->
+        <div class="bg-paths-container" id="bgPaths" aria-hidden="true"></div>
 
         <!-- Content -->
         <div class="hero-content">
           <span class="hero-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             شركة ناشئة واعدة
           </span>
 
-          <h1 class="hero-title">
-            Fly Light<br>
-            <span class="highlight">Logistics Solutions</span>
-          </h1>
+          <h1 class="hero-title-animated">Fly Light Logistics</h1>
 
           <p class="hero-subtitle">
             حلول لوجستية متكاملة وموثوقة لنقل البضائع والشحنات بكفاءة واحترافية عالية
           </p>
 
           <div class="hero-buttons">
-            <button class="btn btn-primary btn-lg" data-page="contribute">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              ابدأ المساهمة
+            <button class="btn-light-primary" data-page="contribute">
+              <span>ابدأ المساهمة</span>
+              <span class="arrow">←</span>
             </button>
-            <button class="btn btn-glass btn-lg" id="learnMoreBtn">
+            <button class="btn-light-glass" id="learnMoreBtn">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              تعرف علينا أكثر
+              <span>تعرف علينا أكثر</span>
             </button>
           </div>
 
@@ -616,7 +602,16 @@
   <script src="js/dashboard.js"></script>
   <script src="js/form.js"></script>
   <script src="js/animations.js"></script>
+  <script src="js/background-paths.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the cinematic background paths
+      initBackgroundPaths('bgPaths');
+      // Animate hero title letter-by-letter
+      animateHeroTitle();
+    });
+  </script>
 
 </body>
 </html>
