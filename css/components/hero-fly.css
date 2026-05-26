@@ -1,13 +1,15 @@
 /* ============================================================
-   HERO FLY — Scroll-driven plane animation
-   The plane flies across the screen as the user scrolls
+   HERO FLY — Normal-sized hero with scroll-driven plane overlay
+   No pin-scroll trick — section is a regular 100vh
    ============================================================ */
 
+/* ── Section: standard hero height ── */
 .hero-fly {
   position: relative;
   width: 100%;
-  /* 200vh tall — gives room for the scroll-driven animation */
-  height: 200vh;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
   background: linear-gradient(
     to bottom,
     #ffffff 0%,
@@ -16,19 +18,17 @@
   );
 }
 
-/* Sticky inner — stays in view while the parent scrolls */
+/* ── Inner — fills the section, centered content ── */
 .hero-fly-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: relative;
   width: 100%;
+  height: 130%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
-/* Subtle grid pattern in the background */
+/* ── Decorative background grid + glow ── */
 .hero-fly-sticky::before {
   content: '';
   position: absolute;
@@ -38,33 +38,56 @@
     linear-gradient(to bottom, rgba(30, 145, 150, 0.06) 1px, transparent 1px);
   background-size: 80px 80px;
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 50%, transparent 100%);
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 50%, transparent 100%);
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 50%, transparent 100%);
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
-/* Soft radial accent (premium glow) */
 .hero-fly-sticky::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: 800px;
   height: 800px;
+  max-width: 110%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(43, 181, 186, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(43, 181, 186, 0.10) 0%, transparent 60%);
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
+  transform: translate(-50%, -50%);
 }
 
-/* ── Static text in center ──────────────────────────────────── */
+/* ── Plane (overlays the text — z-index above .hero-fly-text) ── */
+.hero-fly-image {
+  position: absolute;
+  top: 50%;
+  left: -86px;
+  width: auto;
+  height: auto;
+  z-index: 15;
+  pointer-events: none;
+  transform: translate3d(-150vw, -50%, 0);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.hero-fly-image img {
+  display: block;
+  height: 70vh;
+  max-height: 700px;
+  width: auto;
+  filter: drop-shadow(0 30px 60px rgba(30, 145, 150, 0.25));
+}
+
+/* ── Text block ── */
 .hero-fly-text {
   position: relative;
   z-index: 10;
-  text-align: center;
+  width: 100%;
   max-width: 900px;
   padding: 0 var(--space-6);
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -72,16 +95,15 @@
 }
 
 .hero-fly-eyebrow {
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
   padding: 0.5rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--clr-teal-900);
-  background: rgba(30, 145, 150, 0.08);
-  border: 1px solid rgba(30, 145, 150, 0.22);
-  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(30, 145, 150, 0.25);
+  border-radius: 9999px;
   margin: 0;
   text-transform: uppercase;
   opacity: 0;
@@ -89,18 +111,18 @@
 }
 
 .hero-fly-title {
-  font-size: clamp(2.5rem, 9vw, 6.5rem);
+  font-size: clamp(2.5rem, 9vw, 6rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1;
+  line-height: 1.05;
   margin: 0;
-  background: linear-gradient(135deg, #0A1C33 0%, #14365C 40%, #1E9196 100%);
+  background: linear-gradient(135deg, #0A1C33 0%, #14365C 50%, #1E9196 100%);
   -webkit-background-clip: text;
-  background-clip: text;
+          background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
   opacity: 0;
   animation: hero-fly-fade-in 1s ease 0.3s forwards;
-  text-wrap: balance;
 }
 
 .hero-fly-subtitle {
@@ -109,18 +131,17 @@
   color: var(--clr-text-secondary);
   line-height: 1.7;
   max-width: 600px;
-  margin: 0;
+  margin: 0 auto;
   opacity: 0;
   animation: hero-fly-fade-in 1s ease 0.5s forwards;
-  text-wrap: balance;
 }
 
 .hero-fly-buttons {
-  margin-top: var(--space-3);
   display: flex;
   gap: var(--space-3);
   flex-wrap: wrap;
   justify-content: center;
+  margin: 0;
   opacity: 0;
   animation: hero-fly-fade-in 1s ease 0.7s forwards;
 }
@@ -128,6 +149,7 @@
 .btn-fly-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   padding: 0.875rem 2rem;
   font-family: var(--font-body);
@@ -136,10 +158,11 @@
   color: #fff;
   background: linear-gradient(135deg, #0D6C70 0%, #1E9196 60%, #2BB5BA 100%);
   border: none;
-  border-radius: var(--radius-full);
+  border-radius: 9999px;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(30, 145, 150, 0.28);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-fly-primary:hover {
@@ -155,95 +178,94 @@
   transform: translateX(-4px);
 }
 
-/* ── Animated plane image ───────────────────────────────────── */
-.hero-fly-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* ── Stats ── */
+.hero-fly-stats {
   display: flex;
-  align-items: center;
-  z-index: 20;
-  pointer-events: none;
-  /* Initial state — far off the left side (will be set by JS) */
-  transform: translate3d(-500vw, 0, 0);
+  gap: clamp(1.5rem, 5vw, 3rem);
+  margin-top: var(--space-4);
+  padding-top: var(--space-6);
+  border-top: 1px solid rgba(30, 145, 150, 0.18);
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
   opacity: 0;
-  will-change: transform, opacity;
+  animation: hero-fly-fade-in 1s ease 0.9s forwards;
 }
 
-.hero-fly-image img {
-  width: auto;
-  height: auto;
-  max-width: none;
-  /* Reasonable size for the plane — large but not absurd */
-  height: 50vh;
-  max-height: 600px;
-  filter: drop-shadow(0 20px 40px rgba(30, 145, 150, 0.25));
+.hero-fly-stat { text-align: center; }
+
+.hero-fly-stat-value {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #0D6C70, #2BB5BA);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* ── Soft fade to next section ──────────────────────────────── */
+.hero-fly-stat-label {
+  font-size: 0.8125rem;
+  color: var(--clr-text-secondary);
+  margin-top: var(--space-1);
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* ── Bottom soft fade ── */
 .hero-fly::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0; right: 0;
-  height: 120px;
+  left: 0;
+  right: 0;
+  height: 80px;
   background: linear-gradient(180deg, transparent 0%, var(--clr-bg) 100%);
   pointer-events: none;
-  z-index: 30;
+  z-index: 20;
 }
 
-/* ── Entrance animations (run ONCE) ──────────────────────────── */
 @keyframes hero-fly-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-1rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-1rem); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Responsive ──────────────────────────────────────────────── */
+/* ── Mobile ── */
 @media (max-width: 768px) {
-  .hero-fly {
-    height: 180vh; /* slightly shorter on mobile for better feel */
-  }
   .hero-fly-image img {
-    height: 30vh;
-    max-height: 350px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-fly {
-    height: 150vh;
-  }
-  .hero-fly-image img {
-    height: 25vh;
-    max-height: 250px;
+    height: 45vh;
+    max-height: 450px;
   }
   .btn-fly-primary {
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1.75rem;
     font-size: 1rem;
   }
 }
 
-/* ── Reduced motion — show plane statically in center ───────── */
+@media (max-width: 480px) {
+  .hero-fly-image img {
+    height: 35vh;
+    max-height: 320px;
+  }
+  .hero-fly-stats { gap: 1rem; }
+  .hero-fly-stat-value { font-size: 1.1rem; }
+  .hero-fly-stat-label { font-size: 0.7rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-fly-eyebrow,
   .hero-fly-title,
   .hero-fly-subtitle,
-  .hero-fly-buttons {
+  .hero-fly-buttons,
+  .hero-fly-stats {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
   }
   .hero-fly-image {
-    transform: translate3d(0, 0, 0) !important;
-    opacity: 0.4 !important;
-    justify-content: center;
+    transform: translate3d(0, -50%, 0) !important;
+    opacity: 0.25 !important;
+    left: 50% !important;
+    margin-left: -350px;
   }
 }
