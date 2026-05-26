@@ -64,9 +64,20 @@
 }
 
 @keyframes path-flow {
-  0%   { stroke-dashoffset: 0; opacity: 0.5; }
-  50%  { opacity: 1; }
-  100% { stroke-dashoffset: -100; opacity: 0.5; }
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+  25% { opacity: 0.9; }
+  50% {
+    stroke-dashoffset: -1200;
+    opacity: 1;
+  }
+  75% { opacity: 0.7; }
+  100% {
+    stroke-dashoffset: -2400;
+    opacity: 0.3;
+  }
 }
 
 /* ── Content ─────────────────────────────────────────────────── */
