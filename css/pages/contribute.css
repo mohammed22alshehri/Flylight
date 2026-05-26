@@ -87,20 +87,22 @@
 }
 
 .iban-number {
-  font-size: clamp(0.85rem, 2.5vw, 1.4rem);
+  /* Fluid font size — scales perfectly with screen width */
+  /* On smallest phones (~360px) it shrinks; on desktop it stays bold */
+  font-size: clamp(0.78rem, 4.5vw, 1.4rem);
   font-weight: 800;
   color: #fff;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   direction: ltr;
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   position: relative;
   z-index: 1;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  /* Prevent overflow on mobile */
-  word-break: break-all;
-  overflow-wrap: anywhere;
+  font-family: 'SF Mono', 'Courier New', monospace;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  display: block;
   max-width: 100%;
-  line-height: 1.4;
+  text-align: center;
 }
 
 /* Steps */
@@ -183,23 +185,19 @@
     padding: var(--space-5) var(--space-4);
     overflow: hidden;
   }
-  .iban-number {
-    font-size: 0.95rem;
-    letter-spacing: 0.04em;
-    text-align: center;
-    /* allow wrapping to a second line if needed */
-    white-space: normal;
-    word-spacing: 0.15em;
+  .iban-card-top {
+    flex-direction: row;
+    gap: var(--space-3);
+    align-items: center;
+    justify-content: space-between;
   }
-  .iban-card-top { flex-direction: column; gap: var(--space-3); align-items: flex-start; }
-  .iban-card-top .btn-copy { align-self: flex-end; }
+  .iban-card-top .iban-bank-name {
+    font-size: 0.78rem;
+  }
+  .iban-number {
+    margin-top: var(--space-4);
+    text-align: left;
+  }
   .steps-row { flex-direction: column; gap: var(--space-4); }
   .iban-chip { display: none; }
-}
-
-@media (max-width: 380px) {
-  .iban-number {
-    font-size: 0.8rem;
-    letter-spacing: 0.02em;
-  }
 }
