@@ -19,8 +19,8 @@ function initBackgroundPaths(containerId) {
   // Apply animation delays per path for staggered flow
   const paths = container.querySelectorAll('.bg-path');
   paths.forEach((p, i) => {
-    p.style.animationDelay = (i * 0.4) + 's';
-    p.style.animationDuration = (15 + (i % 4) * 3) + 's';
+    p.style.animationDelay = (i * 0.3) + 's';
+    p.style.animationDuration = (8 + (i % 5) * 2) + 's';
   });
 }
 
@@ -42,7 +42,7 @@ function buildLayer(position, count, rgb) {
     paths += `<path class="bg-path" d="${d}"
                     stroke="rgba(${rgb}, ${opacity})"
                     stroke-width="${width}"
-                    stroke-dasharray="20 8"
+                    stroke-dasharray="60 30"
                     fill="none"/>`;
   }
   return paths;
