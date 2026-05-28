@@ -4,8 +4,8 @@
    ============================================================ */
 
 const SHARE_VALUE   = 50;
-const COMPANY_NAME  = 'Fly Light Logistics';
-const COMPANY_CODE  = 'FLLS';
+const COMPANY_NAME  = 'Fly Light';
+const COMPANY_CODE  = 'FL';
 const COMPANY_CITY  = 'ينبع الصناعية';
 
 let _certTemplateImg = null;
@@ -153,23 +153,23 @@ function renderCertificateCanvas(tpl, c, index, total, dateStr, W, H) {
   // =========================================================
 
   // ── Left section — certificate body (x: 0 → 1370) ──
-  put(1095, 273, COMPANY_NAME, { size: 22, ltr: true, maxW: 225 });
+  put(1048, 273, COMPANY_NAME, { size: 22, ltr: true, maxW: 225 });
   put(210,  273, COMPANY_CODE, { size: 21, ltr: true, align: 'center', maxW: 120 });
-  put(1135, 374, dateStr,      { size: 22, ltr: true, maxW: 255 });
+  put(1115, 374, dateStr,      { size: 22, ltr: true, maxW: 255 });
   put(270,  383, index,        { size: 30, weight: 800, align: 'center', maxW: 120 });
-  put(1048, 490, COMPANY_NAME, { size: 21, ltr: true, maxW: 215 });
-  put(588,  490, COMPANY_CITY, { size: 20, maxW: 170 });
+  put(1048, 490, COMPANY_NAME, { size: 23, ltr: true, maxW: 215 });
+  put(685,  490, COMPANY_CITY, { size: 20, maxW: 170 });
   put(335,  490, c.name,       { size: 20, maxW: 275 });
 
   // ── Right section — stub / holder info (x: 1370 → 1897) ──
   put(1595, 272, COMPANY_NAME, { size: 23, ltr: true, maxW: 250 });
-  put(1475, 327, COMPANY_CODE, { size: 22, ltr: true, align: 'center', maxW: 240 });
-  put(1685, 380, index,        { size: 28, weight: 800, align: 'center', maxW: 130 });
+  put(1595, 327, COMPANY_CODE, { size: 22, ltr: true, align: 'center', maxW: 240 });
+  put(1655, 380, index,        { size: 28, weight: 800, align: 'center', maxW: 130 });
 
-  // Holder info — unified right-edge at x=1720
-  put(1720, 510, c.name,  { size: 22, maxW: 320 });
-  put(1720, 562, c.phone, { size: 22, ltr: true, maxW: 320 });
-  put(1720, 648, dateStr, { size: 22, ltr: true, maxW: 320 });
+  // Holder info — unified right-edge at x=1620
+  put(1620, 510, c.name,  { size: 22, maxW: 320 });
+  put(1620, 562, c.phone, { size: 22, ltr: true, maxW: 320 });
+  put(1620, 648, dateStr, { size: 22, ltr: true, maxW: 320 });
 
   return canvas;
 }
